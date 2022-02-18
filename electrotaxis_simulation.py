@@ -2,9 +2,10 @@ from dolfin import *
 import math
 from fenics import *
 from scipy.integrate import odeint
-import matplotlib.pyplot as plt
 import numpy as np
 from ufl import nabla_div
+from tqdm import tqdm
+import sys
 
 #Simulator settings
 num_points = 50
@@ -43,17 +44,21 @@ M = D/a
 gamma = 0.04
 zeta = 0.01
 a=1
-cE=1
+#cE=1
+Gamma = 1./5
 dt = 0.01
+min_angle = 0.05
+minphi = 0.5
+minphi_b = 0.25
 numSteps = int(10/dt)#electrotaxis time is 10 hours
 num_w = 25
 num_u = 25
 
 #Set simulation parameters we do inference on
-Gamma = float(sys.argv[1])
-cE = float(sys.argv[2])
-beta = float(sys.argv[3])
-
+cE = float(sys.argv[1])
+beta = float(sys.argv[2])
+print(Gamma,cE,beta)
+set_log_level(20)
 #Define main expressions 
 class pIC(UserExpression):
     def eval(self, value, x):
@@ -250,11 +255,11 @@ class NSSolver:
 solver = NSSolver()
 
 #Make files to store the simulation data
-timeseries_phi = TimeSeries('results/phi_G'+str(Gamma)+'_C'+str(cE)+'_b'+str(beta))
-timeseries_p = TimeSeries('results/p_G'+str(Gamma)+'_C'+str(cE)+'_b'+str(beta))
-timeseries_v = TimeSeries('results/v_G'+str(Gamma)+'_C'+str(cE)+'_b'+str(beta))
+timeseries_phi = TimeSeries('results/phi_G'+str(Gamma).replace('.','_')+'_C'+str(cE).replace('.','_')+'_b'+str(beta).replace('.','_'))
+timeseries_p = TimeSeries('results/p_G'+str(Gamma).replace('.','_')+'_C'+str(cE).replace('.','_')+'_b'+str(beta).replace('.','_'))
+timeseries_v = TimeSeries('results/v_G'+str(Gamma).replace('.','_')+'_C'+str(cE).replace('.','_')+'_b'+str(beta).replace('.','_'))
 
-for i in range(numSteps):
+for i in tqdm(range(numSteps)):
     t = i*dt
     #Rename variables
     phi = solver.phi_old
@@ -268,11 +273,6 @@ for i in range(numSteps):
     
     #Advance one time step in the simulation
     solver.advance_one_step(t)
-
-#Define variables for summary statistic computations
-phi_ts = TimeSeries('results/phi_G'+str(Gamma)+'_C'+str(cE)+'_b'+str(beta))
-v_ts = TimeSeries('results/v_G'+str(Gamma)+'_C'+str(cE)+'_b'+str(beta))
-p_ts = TimeSeries('results/p_G'+str(Gamma)+'_C'+str(cE)+'_b'+str(beta))
 
 #Define the functions to be loaded here
 scalar_space = FunctionSpace(mesh, P1)
@@ -289,33 +289,36 @@ v_means = np.zeros(numSteps)
 for i in range(numSteps):
     t = i*dt #Set time
     #Retrieve values of variables at time t
-    phi_ts.retrieve(phi_load.vector(),t)
-    v_ts.retrieve(v_load.vector(),t)
-    p_ts.retrieve(p_load.vector(),t)
+    timeseries_phi.retrieve(phi_load.vector(),t)
+    timeseries_v.retrieve(v_load.vector(),t)
+    timeseries_p.retrieve(p_load.vector(),t)
     
     #Compute magnitude of the velocity in x direction (with field)
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
     region = AutoSubDomain(lambda x, on: phi_load(x) > minphi)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
-    area = assemble(E[0]*dx_sub(1))    
-    v_means[i] = assemble(abs(v_load[0])*dx_sub(1))/area
-
+    area = assemble(E[0]*dx_sub(1))
+    try:
+        v_means[i] = assemble(abs(v_load[0])*dx_sub(1))/area
+    except:
+        pass
+        
 #Find correct rescaling for the velocity
-vs = 1./v_means.mean()
+vs = float(1./v_means.mean())
 
 #Loop through values of w and U and compute summary statistics
-for i in range(num_w):
+for i in tqdm(range(num_w)):
     for j in range(num_u):
         summary = np.zeros((numSteps,8))
         w_sa = (i+1)*(50./num_w) #Set value of self-advection
         U = vs*j*(20./num_u) #Set value of scaled velocity
-        
+        u= j*(20./num_u)
         t = i*dt #Set time
         #Retrieve values of variables at time t
-        phi_ts.retrieve(phi_load.vector(),t)
-        v_ts.retrieve(v_load.vector(),t)
-        p_ts.retrieve(p_load.vector(),t)
+        timeseries_phi.retrieve(phi_load.vector(),t)
+        timeseries_v.retrieve(v_load.vector(),t)
+        timeseries_p.retrieve(p_load.vector(),t)
         
         #Compute gradients of phase field to ID regions
         phigrad = project(grad(phi_load),V)
@@ -328,45 +331,57 @@ for i in range(num_w):
         region.mark(cf, 1)
         dx_sub = Measure('dx', subdomain_data=cf)
         area = assemble(E[0]*dx_sub(1))
-        summary[i,0] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
-        
+        try:
+            summary[i,0] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
+        except Exception as e: 
+            print(i, e)
+            
         #Compute trailing edge outgrowth
         cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
         region = AutoSubDomain(lambda x, on: angle_hor(x) < -min_angle)
         region.mark(cf, 1)
         dx_sub = Measure('dx', subdomain_data=cf)
         area = assemble(E[0]*dx_sub(1))
-        summary[i,1] =  assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
-        
+        try:
+            summary[i,1] =  assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
+        except Exception as e: 
+            print(i, e)
+            
         #Compute top zone speed
         cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
         region = AutoSubDomain(lambda x, on: angle_ver(x) > min_angle)
         region.mark(cf, 1)
         dx_sub = Measure('dx', subdomain_data=cf)
         area = assemble(E[0]*dx_sub(1))
-        summary[i,2] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
-        
+        try:
+            summary[i,2] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
+        except Exception as e: 
+            print(i, e)
+            
         #Compute bottom zone speed
         cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
         region = AutoSubDomain(lambda x, on: angle_ver(x) < -min_angle)
         region.mark(cf, 1)
         dx_sub = Measure('dx', subdomain_data=cf)
         area = assemble(E[0]*dx_sub(1))
-        summary[i,3] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
-        
+        try:
+            summary[i,3] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
+        except Exception as e: 
+            print(i, e)
         #Compute bulk directionality and speed
         cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
         region = AutoSubDomain(lambda x, on: phi_load(x) >= 0.2 and abs(angle_hor(x)) + abs(angle_ver(x)) < 0.3)
         region.mark(cf, 1)
         dx_sub = Measure('dx', subdomain_data=cf)
         area = assemble(E[0]*dx_sub(1))
-        summary[i,4] = assemble((inner((U*v_load+w_sa*p_load),E)/sqrt(inner((U*v_load+w_sa*p_load),(U*v_load+w_sa*p_load)))+0.0005)*dx_sub(1))/area
-        summary[i,5] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
-        
-        #Separately save the velocity and polarity intensity
-        summary[i,6] = assemble((U*v_load[0])*dx_sub(1))/area
-        summary[i,7] = assemble((w_sa*p_load[0])*dx_sub(1))/area
-        
+        try:
+            summary[i,4] = assemble((inner((U*v_load+w_sa*p_load),E)/sqrt(inner((U*v_load+w_sa*p_load),(U*v_load+w_sa*p_load)))+0.0005)*dx_sub(1))/area
+            summary[i,5] = assemble((U*v_load[0]+w_sa*p_load[0])*dx_sub(1))/area
+            summary[i,6] = assemble((U*v_load[0])*dx_sub(1))/area
+            summary[i,7] = assemble((w_sa*p_load[0])*dx_sub(1))/area
+        except Exception as e: 
+            print(i, e)
+
         #Save output
-        fname = 'sumstats/G'+str(Gamma)+'_C'+str(cE)+'_b'+str(beta)+'_w'+str(w_sa)+'_u'+str(U)+'.txt'
+        fname = 'sumstats/G'+str(Gamma).replace('.','_')+'_C'+str(cE).replace('.','_')+'_b'+str(beta).replace('.','_')+'_w'+str(w_sa).replace('.','_')+'_u'+str(u).replace('.','_')+'.txt'
         np.savetxt(fname,summary)
