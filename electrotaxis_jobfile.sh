@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=48
 #SBATCH --partition=short
-#SBATCH --output=elec_%A_%a.out
-#SBATCH --error=elec_errs_%A_%a.out
+#SBATCH --output=outputs/elec_%A_%a.out
+#SBATCH --error=outputs/elec_errs_%A_%a.out
 #SBATCH --array=1-1331
 
 module purge
