@@ -1,5 +1,4 @@
 import os
-
 from dolfin import *
 import math
 from fenics import *
@@ -55,13 +54,6 @@ minphi_b = 0.25
 numSteps = int(10 / dt)  # electrotaxis time is 10 hours
 num_w = 25
 num_u = 25
-
-# Set simulation parameters we do inference on
-cE = float(sys.argv[1])
-beta = float(sys.argv[2])
-print(Gamma, cE, beta)
-set_log_level(20)
-
 
 # Define main expressions
 class pIC(UserExpression):
@@ -139,24 +131,22 @@ for file in resultsfiles:
     timeseries_phi = TimeSeries("phi"+file)
     timeseries_p = TimeSeries("p"+file)
     timeseries_v  = TimeSeries("v"+file)
-    print('time series:', file)
+    print('time series:', timeseries_phi)
 
     for i in range(numSteps):
         t = i * dt  # Set time
         print(t)
         # Retrieve values of variables at time t
-        timeseries_phi.retrieve(phi_load.vector(), t)
-        timeseries_v.retrieve(v_load.vector(), t)
-        timeseries_p.retrieve(p_load.vector(), t)
-
+        try:
+            timeseries_phi.retrieve(phi_load.vector(), t)
+            timeseries_v.retrieve(v_load.vector(), t)
+            timeseries_p.retrieve(p_load.vector(), t)
+        except:
+            print('SKIP')
+            pass
         summary = np.zeros((numSteps, 8))
         w_sa = 15  # Set value of self-advection
         U = 1  # Set value of scaled velocity
-
-        # Retrieve values of variables at time t
-        timeseries_phi.retrieve(phi_load.vector(), t)
-        timeseries_v.retrieve(v_load.vector(), t)
-        timeseries_p.retrieve(p_load.vector(), t)
 
         # Compute gradients of phase field to ID regions
         phigrad = project(grad(phi_load), V)
