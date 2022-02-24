@@ -121,15 +121,17 @@ class NSSolver:
 
         # Assign initial conditions for velocity and pressure
         self.v_old = interpolate(vIC(), V)
-        self.pr_old = TestFunction(W)  # interpolate(scalarZero(),W)
+        zero = Expression(('0.0'), degree=2)
+        self.pr_old = interpolate(zero,W)  # interpolate(scalarZero(),W)
 
         # Assign initial conditions for phi fields
         self.phi_old = interpolate(phiIC(), W)
-        self.phider_old = TestFunction(W)  # interpolate(scalarZero(),W)
+        self.phider_old = interpolate(zero,W)  # interpolate(scalarZero(),W)
 
         # Assign initial conditions for polarity fields
         self.p_old = interpolate(pIC(), V)
-        self.pder_old = TestFunction(V)  # interpolate(vIC(),V)
+        zero = Expression(('0.0','0.0'), degree=2)
+        self.pder_old = interpolate(zero,V)  # interpolate(vIC(),V)
 
         self.velocity_assigner = FunctionAssigner(flowspace.sub(0), V)
         self.pressure_assigner = FunctionAssigner(flowspace.sub(1), W)
