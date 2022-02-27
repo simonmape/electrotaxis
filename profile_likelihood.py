@@ -11,6 +11,22 @@ v_sa ranges from 2 to 50 in 25 increments
 beta ranges from 0.05 to 2.05 in increments of 0.1
 cE ranges from 0.05 to 2.05 in incements of 0.1
 """
+likelihoods = []
+
+def compute_log_likelihood(summary):
+    #Leading edge
+
+    #Trailing edge
+
+    #Top/bottom edge
+
+    #Bulk speed
+
+    #Bulk directionality
+
+    #Likelihood sum
+
+    return le, te, tbe, bs, bd, ls
 
 for sumstat in tqdm(os.listdir()):
     #Read in parameter values used
@@ -25,6 +41,9 @@ for sumstat in tqdm(os.listdir()):
     summary = np.loadtxt(sumstat)
 
     #Compute log-likelihood for this sample
-    log_l = compute_log_likelihood(summary)
+    le, te, tbe, bs, bd, ls = compute_log_likelihood(summary)
 
-    #Record log-likelihoood
+    #Record log-likelihoood for this parameter value
+    likelihoods.append([cE, beta, w, u, le, te, tbe, bs, bd, ls])
+
+df = pd.DataFrame(data, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
