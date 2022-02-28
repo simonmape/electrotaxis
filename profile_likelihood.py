@@ -14,11 +14,11 @@ cE ranges from 0.05 to 2.05 in incements of 0.1
 """
 likelihoods = []
 
-leading_stim_stat = np.loadtxt('leading_stim_stat.txt')
-trailing_stim_stat = np.loadtxt('trailing_stim_stat.txt')
-top_stim_stat = np.loadtxt('top_stim_stat.txt')
-directionality_stim_stat = np.loadtxt('directionality_stim_stat.txt')
-speed_stim_stat = np.loadtxt('speed_stim_stat.txt')
+leading_stim_stat = np.loadtxt('sumstats/leading_stim_stat.txt')
+trailing_stim_stat = np.loadtxt('sumstats/trailing_stim_stat.txt')
+top_stim_stat = np.loadtxt('sumstats/top_stim_stat.txt')
+directionality_stim_stat = np.loadtxt('sumstats/directionality_stim_stat.txt')
+speed_stim_stat = np.loadtxt('sumstats/speed_stim_stat.txt')
 
 # summary[i, 0] = leading edge
 # summary[i, 1] = trailing edge
