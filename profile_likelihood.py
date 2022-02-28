@@ -29,55 +29,70 @@ speed_stim_stat = np.loadtxt('sumstats/speed_stim_stat.txt')
 def compute_log_likelihood(summary):
     #Leading edge
     obs = leading_stim_stat
-    timepoints = np.round(obs[:, 0]*100)
+    obs = obs[obs[:,0]<10]
+    obs = obs[~np.isnan(obs).any(axis=1)]
+    timepoints = np.round(obs[:, 0]*100).astype(int)
+    timepoints = timepoints[timepoints<1000]
     sim = summary[timepoints, 0]
-    le = norm.logpdf(sim, obs[:, 1], obs[:, 2])
+    le = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Trailing edge
     obs = trailing_stim_stat
-    timepoints = np.round(obs[:, 0]*100)
+    obs = obs[obs[:, 0] < 10]
+    obs = obs[~np.isnan(obs).any(axis=1)]
+    timepoints = np.round(obs[:, 0]*100).astype(int)
+    timepoints = timepoints[timepoints < 1000]
     sim = summary[timepoints, 1]
-    te = norm.logpdf(sim, obs[:, 1], obs[:, 2])
+    te = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Top/bottom edge
     obs = top_stim_stat
-    timepoints = np.round(obs[:, 0]*100)
+    obs = obs[obs[:, 0] < 10]
+    obs = obs[~np.isnan(obs).any(axis=1)]
+    timepoints = np.round(obs[:, 0]*100).astype(int)
+    timepoints = timepoints[timepoints < 1000]
     sim = 0.5*(summary[timepoints, 2]+summary[timepoints, 3])
-    tbe = norm.logpdf(sim, obs[:, 1], obs[:, 2])
+    tbe = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     # Bulk directionality
     obs = directionality_stim_stat
-    timepoints = np.round(obs[:, 0]*100)
+    obs = obs[obs[:, 0] < 10]
+    obs = obs[~np.isnan(obs).any(axis=1)]
+    timepoints = np.round(obs[:, 0]*100).astype(int)
+    timepoints = timepoints[timepoints < 1000]
     sim = summary[timepoints, 4]
-    te = norm.logpdf(sim, obs[:, 1], obs[:, 2])
+    bd = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Bulk speed
     obs = speed_stim_stat
-    timepoints = np.round(obs[:, 0]*100)
+    obs = obs[obs[:, 0] < 10]
+    obs = obs[~np.isnan(obs).any(axis=1)]
+    timepoints = np.round(obs[:, 0]*100).astype(int)
+    timepoints = timepoints[timepoints < 1000]
     sim = summary[timepoints, 5]
-    te = norm.logpdf(sim, obs[:, 1], obs[:, 2])
+    bs = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Likelihood sum
     ls = le+te+tbe+bd+bs
-
     return le, te, tbe, bd, bs, ls
 
 for sumstat in tqdm(os.listdir('sumstats/')):
-    #Read in parameter values used
-    param_list = re.split('G|C|b|w|u|',file.replace('.txt',''))[2:6]
-    param_list = [item.replace('_','.')[:-1] for item in param_list]
-    cE = float(param_list[0])
-    beta = float(param_list[1])
-    w = float(param_list[2])
-    u = float(param_list[3])
+    if re.search(r'\d', sumstat):
+        #Read in parameter values used
+        param_list = re.split(r'[GCbwu]',sumstat.replace('.txt',''))[2:6]
+        param_list = [item.replace('_','.') for item in param_list]
+        cE = float(param_list[0][:-1])
+        beta = float(param_list[1][:-1])
+        w = float(param_list[2][:-1])
+        u = float(param_list[3])
 
-    #Read the summary statistic
-    summary = np.loadtxt(sumstat)
+        #Read the summary statistic
+        summary = np.loadtxt('sumstats/'+sumstat)
 
-    #Compute log-likelihood for this sample
-    le, te, tbe, bd, bs, ls = compute_log_likelihood(summary)
+        #Compute log-likelihood for this sample
+        le, te, tbe, bd, bs, ls = compute_log_likelihood(summary)
 
-    #Record log-likelihoood for this parameter value
-    likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
+        #Record log-likelihoood for this parameter value
+        likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
 
 df = pd.DataFrame(data, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
