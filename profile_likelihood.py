@@ -62,7 +62,7 @@ def compute_log_likelihood(summary):
 
     return le, te, tbe, bd, bs, ls
 
-for sumstat in tqdm(os.listdir()):
+for sumstat in tqdm(os.listdir('sumstats/')):
     #Read in parameter values used
     param_list = re.split('G|C|b|w|u|',file.replace('.txt',''))[2:6]
     param_list = [item.replace('_','.')[:-1] for item in param_list]
