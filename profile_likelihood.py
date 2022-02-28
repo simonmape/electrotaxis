@@ -95,4 +95,5 @@ for sumstat in tqdm(os.listdir('sumstats/')):
         #Record log-likelihoood for this parameter value
         likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
 
-df = pd.DataFrame(data, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
+df = pd.DataFrame(likelihoods, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
+df.to_csv('simple_electrotaxis_loglikelihoods.csv')
