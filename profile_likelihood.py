@@ -3,6 +3,7 @@ import pandas as pd
 import re
 import os
 from tqdm import tqdm
+from scipy.stats import norm
 
 """"
 Parameter grid here is given by Gamma =  2
@@ -12,6 +13,12 @@ beta ranges from 0.05 to 2.05 in increments of 0.1
 cE ranges from 0.05 to 2.05 in incements of 0.1
 """
 likelihoods = []
+
+directionality_stim_stat = np.loadtxt('directionality_stim_stat.txt')
+leading_stim_stat = np.loadtxt('leading_stim_stat.txt')
+speed_stim_stat = np.loadtxt('speed_stim_stat.txt')
+top_stim_stat = np.loadtxt('top_stim_stat.txt')
+trailing_stim_stat = np.loadtxt('trailing_stim_stat.txt')
 
 def compute_log_likelihood(summary):
     #Leading edge
