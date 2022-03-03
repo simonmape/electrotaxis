@@ -122,8 +122,9 @@ cEs = np.array([0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95, 1.05
         1.15, 1.25, 1.35, 1.45, 1.55, 1.65, 1.75, 1.85, 1.95, 2.05])
 Gamma = 0.2
 
-for beta in betas:
+for beta in tqdm(betas):
     for cE in cEs:
+        summary = np.zeros((numSteps, 8))
         timeseries_phi = TimeSeries(
             'results/phi_G' + str(Gamma).replace('.', '_') + '_C' + str(cE).replace('.', '_') + '_b' + str(beta).replace('.',
                                                                                                                          '_'))
