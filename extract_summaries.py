@@ -222,3 +222,4 @@ for beta in betas:
         fname = 'sumstats2/G' + str(Gamma).replace('.', '_') + '_C' + str(cE).replace('.', '_') + '_b' + str(
             beta).replace('.', '_')  + '.txt'
         np.savetxt(fname, summary)
+
