@@ -36,7 +36,7 @@ alpha = a = 1
 eta = 5. / 3.
 kappa = 0.04
 xi = 1.1
-w_sa = 0.0015 * 3600
+w_sa = 50
 phi0 = 2
 phicr = 1
 D = 0.007
@@ -53,7 +53,7 @@ minphi_b = 0.25
 numSteps = int(10 / dt)  # electrotaxis time is 10 hours
 num_w = 25
 num_u = 25
-
+U = 1
 set_log_level(20)
 
 
