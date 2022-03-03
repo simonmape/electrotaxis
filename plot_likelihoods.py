@@ -1,11 +1,6 @@
 import numpy as np
-import pandas as pd
-import re
-import os
 from tqdm import tqdm
-from scipy.stats import norm
-
-pl = pd.read_csv('simple_electrotaxis_L2.csv')
+from matplotlib import pyplot as plt
 
 """"
 Want to get here: 
@@ -23,7 +18,7 @@ parameter_ranges = [np.unique(pl[par].to_numpy()) for par in parameters]
 for i, summary_stat in tqdm(enumerate(summary_stats)):
     for j, parameter in enumerate(parameters):
         #Marginal profiles here
-        profiles = [pl.loc[(pl[parameter] == val) & (pl['w'] == 50)].min() for val in parameter_ranges[j]]
+        profiles = [pl.loc[pl[parameter] == val].min() for val in parameter_ranges[j]]
         marginal = np.array([profile[summary_stat] for profile in profiles])
         fName = parameter+'_'+summary_stat+'.txt'
         np.savetxt(fName,marginal)
@@ -37,7 +32,7 @@ for i, summary_stat in tqdm(enumerate(summary_stats)):
                 for p2 in range(numPar2):
                     par1 = parameter_ranges[j][p1]
                     par2 = parameter_ranges[k][p2]
-                    pairwise[p1,p2] = pl.loc[(pl[parameter] == par1) & (pl[parameter2] == par2) & (pl['w'] == 50)].min()[summary_stat]
+                    pairwise[p1,p2] = pl.loc[(pl[parameter] == par1) & (pl[parameter2] == par2)].min()[summary_stat]
 
             fName = parameter+'_'+parameter2+'_'+summary_stat+'.txt'
             np.savetxt(fName,pairwise)

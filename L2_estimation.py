@@ -34,7 +34,7 @@ def compute_log_likelihood(summary):
     timepoints = np.round(obs[:, 0]*100).astype(int)
     timepoints = timepoints[timepoints<1000]
     sim = summary[timepoints, 0] - summary[timepoints,5]
-    le = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
+    le = np.linalg.norm(sim-obs[:,1])
 
     #Trailing edge
     obs = trailing_stim_stat
@@ -43,7 +43,7 @@ def compute_log_likelihood(summary):
     timepoints = np.round(obs[:, 0]*100).astype(int)
     timepoints = timepoints[timepoints < 1000]
     sim = summary[timepoints, 1] - summary[timepoints,5]
-    te = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
+    te = np.linalg.norm(sim-obs[:,1])
 
     #Top/bottom edge
     obs = top_stim_stat
@@ -52,7 +52,7 @@ def compute_log_likelihood(summary):
     timepoints = np.round(obs[:, 0]*100).astype(int)
     timepoints = timepoints[timepoints < 1000]
     sim = 0.5*(summary[timepoints, 2]+summary[timepoints, 3])
-    tbe = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
+    tbe = np.linalg.norm(sim-obs[:,1])
 
     # Bulk directionality
     obs = directionality_stim_stat
@@ -61,7 +61,7 @@ def compute_log_likelihood(summary):
     timepoints = np.round(obs[:, 0]*100).astype(int)
     timepoints = timepoints[timepoints < 1000]
     sim = summary[timepoints, 4]
-    bd = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
+    bd = np.linalg.norm(sim-obs[:,1])
 
     #Bulk speed
     obs = speed_stim_stat
@@ -70,7 +70,7 @@ def compute_log_likelihood(summary):
     timepoints = np.round(obs[:, 0]*100).astype(int)
     timepoints = timepoints[timepoints < 1000]
     sim = summary[timepoints, 5]
-    bs = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
+    bs = np.linalg.norm(sim-obs[:,1])
 
     #Likelihood sum
     ls = le+te+tbe+bd+bs
@@ -96,4 +96,4 @@ for sumstat in tqdm(os.listdir('sumstats/')):
         likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
 
 df = pd.DataFrame(likelihoods, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
-df.to_csv('simple_electrotaxis_loglikelihoods.csv')
+df.to_csv('simple_electrotaxis_L2.csv')
