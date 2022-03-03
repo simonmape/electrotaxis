@@ -147,7 +147,7 @@ for beta in tqdm(betas):
 
         for i in range(numSteps):
             t = i * dt
-
+            print(i)
             # Retrieve values of variables at time t
             timeseries_phi.retrieve(phi_load.vector(), t)
             timeseries_v.retrieve(v_load.vector(), t)
