@@ -54,10 +54,6 @@ numSteps = int(10 / dt)  # electrotaxis time is 10 hours
 num_w = 25
 num_u = 25
 
-# Set simulation parameters we do inference on
-cE = float(sys.argv[1])
-beta = float(sys.argv[2])
-print(Gamma, cE, beta)
 set_log_level(20)
 
 
