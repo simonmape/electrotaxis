@@ -53,7 +53,7 @@ minphi_b = 0.25
 numSteps = int(10 / dt)  # electrotaxis time is 10 hours
 num_w = 25
 num_u = 25
-U = 1
+U = 3600
 set_log_level(20)
 
 
