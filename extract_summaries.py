@@ -215,7 +215,7 @@ for beta in tqdm(betas):
             except Exception as e:
                 print(i, e)
         # Save output
-        fname = 'sumstats2/G' + str(Gamma).replace('.', '_') + '_C' + str(cE).replace('.', '_') + '_b' + str(
+        fname = 'sumstats3/G' + str(Gamma).replace('.', '_') + '_C' + str(cE).replace('.', '_') + '_b' + str(
             beta).replace('.', '_')  + '.txt'
         np.savetxt(fname, summary)
 
