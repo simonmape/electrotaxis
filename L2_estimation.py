@@ -26,50 +26,82 @@ speed_stim_stat = np.loadtxt('sumstats/speed_stim_stat_smooth.txt')
 # summary[i, 4] = directionality
 # summary[i, 5] = speed
 
+sumstat[:, 0] = U * summary[:, 0]
+sumstat[:, 1] = w_sa * summary[:, 1]
+sumstat[:, 2] = U * summary[:, 2]
+sumstat[:, 3] = w_sa * summary[:, 3]
+sumstat[:, 4] = U * summary[:, 4]
+sumstat[:, 5] = w_sa * summary[:, 5]
+sumstat[:, 7] = U * summary[:, 7]
+sumstat[:, 8] = w_sa * summary[:, 8]
+
+
+
 def compute_log_likelihood(summary):
+    # leading edge
+    # sumstat[:, 0] = U * summary[:, 0]
+    # sumstat[:, 1] = w_sa * summary[:, 1]
+    #
+    # trailing edge
+    # sumstat[:, 2] = U * summary[:, 2]
+    # sumstat[:, 3] = w_sa * summary[:, 3]
+    #
+    # top/bottom edge
+    # sumstat[:, 4] = U * summary[:, 4]
+    # sumstat[:, 5] = w_sa * summary[:, 5]
+    #
+    # directionality
+    # 6
+    #
+    # bulk speed
+    # sumstat[:, 7] = U * summary[:, 7]
+    # sumstat[:, 8] = w_sa * summary[:, 8]
+    #
+    # gaussian_filter1d(quick_output[times, 0] - adj, 25)
+
     #Leading edge
     obs = leading_stim_stat
-    obs = obs[obs[:,0]<10]
+    obs = obs[obs[:,0]<7]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints<1000]
-    sim = summary[timepoints, 0] - summary[timepoints,5]
+    timepoints = timepoints[timepoints<700]
+    sim = gaussian_filter1d(summary[timepoints, 0] + summary[timepoints,1],25) - gaussian_filter1d(summary[timepoints, 7] + summary[timepoints,8],25)
     le = np.linalg.norm(sim-obs[:,1])
 
     #Trailing edge
     obs = trailing_stim_stat
-    obs = obs[obs[:, 0] < 10]
+    obs = obs[obs[:, 0] < 7]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 1000]
-    sim = summary[timepoints, 1] - summary[timepoints,5]
+    timepoints = timepoints[timepoints < 700]
+    sim = gaussian_filter1d(summary[timepoints, 2] + summary[timepoints,3],25) - gaussian_filter1d(summary[timepoints, 7] + summary[timepoints,8],25)
     te = np.linalg.norm(sim-obs[:,1])
 
     #Top/bottom edge
     obs = top_stim_stat
-    obs = obs[obs[:, 0] < 10]
+    obs = obs[obs[:, 0] < 7]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 1000]
-    sim = 0.5*(summary[timepoints, 2]+summary[timepoints, 3])
+    timepoints = timepoints[timepoints < 700]
+    sim = gaussian_filter1d(summary[timepoints, 4] + summary[timepoints,5],25)
     tbe = np.linalg.norm(sim-obs[:,1])
 
     # Bulk directionality
     obs = directionality_stim_stat
-    obs = obs[obs[:, 0] < 10]
+    obs = obs[obs[:, 0] < 7]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 1000]
-    sim = summary[timepoints, 4]
+    timepoints = timepoints[timepoints < 700]
+    sim = gaussian_filter1d(summary[timepoints, 6],25)
     bd = np.linalg.norm(sim-obs[:,1])
 
     #Bulk speed
     obs = speed_stim_stat
-    obs = obs[obs[:, 0] < 10]
+    obs = obs[obs[:, 0] < 7]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 1000]
-    sim = summary[timepoints, 5]
+    timepoints = timepoints[timepoints < 700]
+    sim = gaussian_filter1d(summary[timepoints, 7] + summary[timepoints,8],25)
     bs = np.linalg.norm(sim-obs[:,1])
 
     #Likelihood sum
@@ -96,4 +128,4 @@ for sumstat in tqdm(os.listdir('sumstats/')):
         likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
 
 df = pd.DataFrame(likelihoods, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
-df.to_csv('simple_electrotaxis_L2.csv')
+df.to_csv('simple_electrotaxis_L2_new.csv')
