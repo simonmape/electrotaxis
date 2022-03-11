@@ -26,14 +26,14 @@ speed_stim_stat = np.loadtxt('sumstats/speed_stim_stat_smooth.txt')
 # summary[i, 4] = directionality
 # summary[i, 5] = speed
 
-sumstat[:, 0] = U * summary[:, 0]
-sumstat[:, 1] = w_sa * summary[:, 1]
-sumstat[:, 2] = U * summary[:, 2]
-sumstat[:, 3] = w_sa * summary[:, 3]
-sumstat[:, 4] = U * summary[:, 4]
-sumstat[:, 5] = w_sa * summary[:, 5]
-sumstat[:, 7] = U * summary[:, 7]
-sumstat[:, 8] = w_sa * summary[:, 8]
+# sumstat[:, 0] = U * summary[:, 0]
+# sumstat[:, 1] = w_sa * summary[:, 1]
+# sumstat[:, 2] = U * summary[:, 2]
+# sumstat[:, 3] = w_sa * summary[:, 3]
+# sumstat[:, 4] = U * summary[:, 4]
+# sumstat[:, 5] = w_sa * summary[:, 5]
+# sumstat[:, 7] = U * summary[:, 7]
+# sumstat[:, 8] = w_sa * summary[:, 8]
 
 
 
