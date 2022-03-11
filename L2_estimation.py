@@ -4,6 +4,7 @@ import re
 import os
 from tqdm import tqdm
 from scipy.stats import norm
+from scipy.ndimage import gaussian_filter1d
 
 """"
 Parameter grid here is given by Gamma =  2
