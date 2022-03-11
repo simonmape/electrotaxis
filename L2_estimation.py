@@ -21,45 +21,7 @@ top_stim_stat = np.loadtxt('sumstats/top_stim_stat_smooth.txt')
 directionality_stim_stat = np.loadtxt('sumstats/directionality_stim_stat_smooth.txt')
 speed_stim_stat = np.loadtxt('sumstats/speed_stim_stat_smooth.txt')
 
-# summary[i, 0] = leading edge
-# summary[i, 1] = trailing edge
-# summary[i, 2]+summary[i,3] = top and bottom zone
-# summary[i, 4] = directionality
-# summary[i, 5] = speed
-
-# sumstat[:, 0] = U * summary[:, 0]
-# sumstat[:, 1] = w_sa * summary[:, 1]
-# sumstat[:, 2] = U * summary[:, 2]
-# sumstat[:, 3] = w_sa * summary[:, 3]
-# sumstat[:, 4] = U * summary[:, 4]
-# sumstat[:, 5] = w_sa * summary[:, 5]
-# sumstat[:, 7] = U * summary[:, 7]
-# sumstat[:, 8] = w_sa * summary[:, 8]
-
-
-
 def compute_log_likelihood(summary):
-    # leading edge
-    # sumstat[:, 0] = U * summary[:, 0]
-    # sumstat[:, 1] = w_sa * summary[:, 1]
-    #
-    # trailing edge
-    # sumstat[:, 2] = U * summary[:, 2]
-    # sumstat[:, 3] = w_sa * summary[:, 3]
-    #
-    # top/bottom edge
-    # sumstat[:, 4] = U * summary[:, 4]
-    # sumstat[:, 5] = w_sa * summary[:, 5]
-    #
-    # directionality
-    # 6
-    #
-    # bulk speed
-    # sumstat[:, 7] = U * summary[:, 7]
-    # sumstat[:, 8] = w_sa * summary[:, 8]
-    #
-    # gaussian_filter1d(quick_output[times, 0] - adj, 25)
-
     #Leading edge
     obs = leading_stim_stat
     obs = obs[obs[:,0]<7]
