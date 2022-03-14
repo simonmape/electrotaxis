@@ -91,4 +91,4 @@ for sumstat in tqdm(os.listdir('sumstats/')):
             likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
 
 df = pd.DataFrame(likelihoods, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
-df.to_csv('simple_electrotaxis_L2_new.csv')
+df.to_csv('simple_electrotaxis_L2_u1800.csv')
