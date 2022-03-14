@@ -37,7 +37,7 @@ def compute_log_likelihood(summary):
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
     timepoints = timepoints[timepoints < 700]
-    sim = gaussian_filter1d(summary[timepoints, 2] + summary[timepoints,3],25) - gaussian_filter1d(summary[timepoints, 7] + summary[timepoints,8],25)
+    sim = gaussian_filter1d(-summary[timepoints, 2] + summary[timepoints,3],25) - gaussian_filter1d(-summary[timepoints, 7] + summary[timepoints,8],25)
     te = np.linalg.norm(sim-obs[:,1])
 
     #Top/bottom edge
