@@ -80,15 +80,15 @@ for sumstat in tqdm(os.listdir('sumstats/')):
         beta = float(param_list[1][:-1])
         w = float(param_list[2][:-1])
         u = float(param_list[3])
+        if(u ==1800):
+            #Read the summary statistic
+            summary = np.loadtxt('sumstats/'+sumstat)
 
-        #Read the summary statistic
-        summary = np.loadtxt('sumstats/'+sumstat)
+            #Compute log-likelihood for this sample
+            le, te, tbe, bd, bs, ls = compute_log_likelihood(summary)
 
-        #Compute log-likelihood for this sample
-        le, te, tbe, bd, bs, ls = compute_log_likelihood(summary)
-
-        #Record log-likelihoood for this parameter value
-        likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
+            #Record log-likelihoood for this parameter value
+            likelihoods.append([cE, beta, w, u, le, te, tbe, bd, bs, ls])
 
 df = pd.DataFrame(likelihoods, columns = ['cE', 'beta', 'w', 'u', 'le', 'te', 'tbe', 'bs', 'bd', 'ls'])
 df.to_csv('simple_electrotaxis_L2_new.csv')
