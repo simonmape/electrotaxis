@@ -24,46 +24,46 @@ speed_stim_stat = np.loadtxt('sumstats/speed_stim_stat_smooth.txt')
 def compute_log_likelihood(summary):
     #Leading edge
     obs = leading_stim_stat
-    obs = obs[obs[:,0]<7]
+    obs = obs[obs[:,0]<10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints<700]
+    timepoints = timepoints[timepoints<1000]
     sim = gaussian_filter1d(summary[timepoints, 0] + summary[timepoints,1],25) - gaussian_filter1d(summary[timepoints,8],25)
     le = np.linalg.norm(sim-obs[:,1])
 
     #Trailing edge
     obs = trailing_stim_stat
-    obs = obs[obs[:, 0] < 7]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 700]
+    timepoints = timepoints[timepoints < 1000]
     sim = gaussian_filter1d(-summary[timepoints, 2] + summary[timepoints,3],25) - gaussian_filter1d(summary[timepoints,8],25)
     te = np.linalg.norm(sim-obs[:,1])
 
     #Top/bottom edge
     obs = top_stim_stat
-    obs = obs[obs[:, 0] < 7]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 700]
+    timepoints = timepoints[timepoints < 1000]
     sim = gaussian_filter1d(summary[timepoints, 4] + summary[timepoints,5],25)
     tbe = np.linalg.norm(sim-obs[:,1])
 
     # Bulk directionality
     obs = directionality_stim_stat
-    obs = obs[obs[:, 0] < 7]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 700]
+    timepoints = timepoints[timepoints < 1000]
     sim = gaussian_filter1d(summary[timepoints, 6],25)
     bd = np.linalg.norm(sim-obs[:,1])
 
     #Bulk speed
     obs = speed_stim_stat
-    obs = obs[obs[:, 0] < 7]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*100).astype(int)
-    timepoints = timepoints[timepoints < 700]
+    timepoints = timepoints[timepoints < 1000]
     sim = gaussian_filter1d(summary[timepoints,8],25)
     bs = np.linalg.norm(sim-obs[:,1])
 
