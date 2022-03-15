@@ -55,8 +55,8 @@ num_w = 25
 num_u = 25
 
 # Set simulation parameters we do inference on
-cE = 0.055
-beta = 0.055
+cE = 0.2
+beta = 0.2
 set_log_level(20)
 
 
@@ -314,6 +314,7 @@ minphi_b = 0.25
 numSteps = 1000
 dt = 0.01
 sumstat = np.zeros((1000, 9))
+U = 3600
 
 for i in tqdm(range(numSteps)):
     t = i * dt
@@ -386,7 +387,6 @@ for i in tqdm(range(numSteps)):
     region = AutoSubDomain(lambda x, on: phi_load(x) >= 0.2 and abs(angle_hor(x)) + abs(angle_ver(x)) < 0.3)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
-    bulk_region.append(dx_sub)
     area = assemble(E[0] * dx_sub(1))
     try:
         sumstat[i, 6] = assemble((inner(p_load, E) / sqrt(inner(p_load, p_load))) * dx_sub(1)) / area
