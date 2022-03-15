@@ -202,10 +202,15 @@ class NSSolver:
         else:
             field = interpolate(pointRight(), V)
 
+        # F_pder = inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
+        #          dot(p_old, p_old) * alpha * inner(p_new, z) * dx - \
+        #          cE * inner(field, field) * inner(p_new - field, p_new - field) * inner(p_new - field, z) * dx - \
+        #          kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
+
         F_pder = inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
-                 dot(p_old, p_old) * alpha * inner(p_new, z) * dx - \
-                 cE * inner(field, field) * inner(p_new - field, p_new - field) * inner(p_new - field, z) * dx - \
-                 kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
+               dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
+               cE * inner(field, z) * dx - \
+               kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
 
         F_pols = F_p + F_pder
         J = derivative(F_pols, pols_new, dU)
