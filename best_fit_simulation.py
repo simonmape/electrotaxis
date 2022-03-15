@@ -273,8 +273,8 @@ solver = NSSolver()
 
 # Make files to store the simulation data
 timeseries_phi = TimeSeries('results/phi_bestfit')
-timeseries_p =  TimeSeries('results/p_bestfit')                                                                                           '_'))
-timeseries_v = TimeSeries('results/v_bestfit')                                                                                       '_'))
+timeseries_p =  TimeSeries('results/p_bestfit')
+timeseries_v = TimeSeries('results/v_bestfit')
 
 for i in tqdm(range(numSteps)):
     t = i * dt
