@@ -386,3 +386,5 @@ for i in tqdm(range(numSteps)):
         sumstat[i, 8] = w_sa*assemble(p_load[0] * dx_sub(1)) / area
     except Exception as e:
         print(i, e)
+
+np.savetxt('best_fit_results.txt',sumstat)
