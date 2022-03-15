@@ -45,7 +45,7 @@ gamma = 0.04
 zeta = 0.01
 a = 1
 # cE=1
-Gamma = 1. / 5
+Gamma = 1.
 dt = 0.01
 min_angle = 0.05
 minphi = 0.5
@@ -55,8 +55,8 @@ num_w = 25
 num_u = 25
 
 # Set simulation parameters we do inference on
-cE = 0.1
-beta = 0.05
+cE = 0.05
+beta = 0.075
 set_log_level(20)
 
 
