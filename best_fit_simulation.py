@@ -171,7 +171,7 @@ class NSSolver:
         print('Navier-Stokes')
         F_v = eta*inner(nabla_grad(v_new), nabla_grad(y)) * dx + \
               gamma * inner(v_new, y) * dx + dot(nabla_grad(pr_new), y) * dx - \
-              zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
+              inner(outer(p_old, p_old), nabla_grad(y)) * dx
 
         F_incomp = div(v_new) * w * dx  # corresponding to incompressibility condition
         F_flow = F_v + F_incomp  # total variational formulation of flow problem
