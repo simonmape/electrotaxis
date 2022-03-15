@@ -8,7 +8,7 @@ from tqdm import tqdm
 import sys
 
 # Simulator settings
-num_points = 50
+num_points = 70
 mesh = RectangleMesh(Point(0.0, 20.0), Point(60, 80), num_points, num_points)
 
 W = FunctionSpace(mesh, 'P', 1)
@@ -168,6 +168,7 @@ class NSSolver:
         v_new, pr_new = split(vpr_new)
 
         # Navier-Stokes scheme
+        print('Navier-Stokes')
         F_v = eta*inner(nabla_grad(v_new), nabla_grad(y)) * dx + \
               gamma * inner(v_new, y) * dx + dot(nabla_grad(pr_new), y) * dx - \
               zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
@@ -191,6 +192,7 @@ class NSSolver:
         (du1, du2) = split(dU)
 
         # polarity evolution
+        print('Polarity')
         F_p = (1. / dt) * dot(p_new - p_old, y) * dx + inner(nabla_grad(p_new) * (v_new + w_sa * p_new), y) * dx + \
               (1. / Gamma) * inner(pder_new, y) * dx
 
@@ -215,6 +217,7 @@ class NSSolver:
         p_new, pder_new = split(pols_new)
 
         # PHASE FIELD PROBLEM#
+        print('Phi')
         phi_new, phider_new = split(phis_new)
         w1w2 = TestFunction(phasespace)
         w1, w2 = split(w1w2)
