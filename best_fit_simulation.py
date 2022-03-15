@@ -55,8 +55,8 @@ num_w = 25
 num_u = 25
 
 # Set simulation parameters we do inference on
-cE = 0.2
-beta = 0.2
+cE = 0.1
+beta = 0.05
 set_log_level(20)
 
 
@@ -299,100 +299,3 @@ for i in tqdm(range(numSteps)):
     # Advance one time step in the simulation
     solver.advance_one_step(t)
 
-# Define the functions to be loaded here
-scalar_space = FunctionSpace(mesh, P1)
-E = interpolate(fixedField(), V)
-right = interpolate(pointRight(), V)
-up = interpolate(pointUp(), V)
-phi_load = Function(scalar_space)
-v_load = Function(V)
-p_load = Function(V)
-
-min_angle = 0.05
-minphi = 0.5
-minphi_b = 0.25
-numSteps = 1000
-dt = 0.01
-sumstat = np.zeros((1000, 9))
-U = 3600
-
-for i in tqdm(range(numSteps)):
-    t = i * dt
-    # Retrieve values of variables at time t
-    timeseries_phi.retrieve(phi_load.vector(), t)
-    timeseries_v.retrieve(v_load.vector(), t)
-    timeseries_p.retrieve(p_load.vector(), t)
-
-    # Compute gradients of phase field to ID regions
-    phigrad = project(grad(phi_load), V)
-    angle_hor = project(-inner(grad(phi_load), right), W)
-    angle_ver = project(-inner(grad(phi_load), up, ), W)
-
-    # Compute leading edge outgrowth
-    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_hor(x) > min_angle)
-    region.mark(cf, 1)
-    dx_sub = Measure('dx', subdomain_data=cf)
-    area = assemble(E[0] * dx_sub(1))
-    try:
-        sumstat[i, 0] = U*assemble(v_load[0] * dx_sub(1)) / area
-        sumstat[i, 1] = w_sa*assemble(p_load[0] * dx_sub(1)) / area
-    except Exception as e:
-        print(i, e)
-
-    # Compute trailing edge outgrowth
-    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_hor(x) < -min_angle)
-    region.mark(cf, 1)
-    dx_sub = Measure('dx', subdomain_data=cf)
-    area = assemble(E[0] * dx_sub(1))
-    try:
-        sumstat[i, 2] = U*assemble(v_load[0]  * dx_sub(1)) / area
-        sumstat[i, 3] = w_sa*assemble(p_load[0] * dx_sub(1)) / area
-    except Exception as e:
-        print(i, e)
-
-    # Compute top zone speed
-    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_ver(x) > min_angle)
-    region.mark(cf, 1)
-    dx_sub = Measure('dx', subdomain_data=cf)
-    area = assemble(E[0] * dx_sub(1))
-    try:
-        top_vel = U*assemble(v_load[0] * dx_sub(1)) / area
-        top_pol = w_sa*assemble(p_load[0] * dx_sub(1)) / area
-    except Exception as e:
-        print(i, e)
-
-    # Compute bottom zone speed
-    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_ver(x) < -min_angle)
-    region.mark(cf, 1)
-    dx_sub = Measure('dx', subdomain_data=cf)
-    area = assemble(E[0] * dx_sub(1))
-    try:
-        bottom_vel = U*assemble(v_load[0] * dx_sub(1)) / area
-        bottom_pol = w_sa*assemble(p_load[0] * dx_sub(1)) / area
-    except Exception as e:
-        print(i, e)
-
-    try:
-        sumstat[i,4] = 0.5 * (top_vel + bottom_vel)
-        sumstat[i,5] = 0.5 * (top_pol + bottom_pol)
-    except:
-        pass
-
-    # Compute bulk directionality and speed
-    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: phi_load(x) >= 0.2 and abs(angle_hor(x)) + abs(angle_ver(x)) < 0.3)
-    region.mark(cf, 1)
-    dx_sub = Measure('dx', subdomain_data=cf)
-    area = assemble(E[0] * dx_sub(1))
-    try:
-        sumstat[i, 6] = assemble((inner(p_load, E) / sqrt(inner(p_load, p_load))) * dx_sub(1)) / area
-        sumstat[i, 7] = U*assemble(v_load[0] * dx_sub(1)) / area
-        sumstat[i, 8] = w_sa*assemble(p_load[0] * dx_sub(1)) / area
-    except Exception as e:
-        print(i, e)
-
-np.savetxt('best_fit_results.txt',sumstat)
