@@ -55,8 +55,8 @@ num_w = 25
 num_u = 25
 
 # Set simulation parameters we do inference on
-cE = 0.55
-beta = 0.55
+cE = 0.055
+beta = 0.055
 set_log_level(20)
 
 
