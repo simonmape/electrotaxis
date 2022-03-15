@@ -36,7 +36,7 @@ alpha = a = 1
 eta = 5. / 3.
 kappa = 0.04
 xi = 1.1
-w_sa = 100
+w_sa = 1
 phi0 = 2
 phicr = 1
 D = 0.007
@@ -56,7 +56,7 @@ num_u = 25
 
 # Set simulation parameters we do inference on
 cE = 0.05
-beta = 0.075
+beta = 0.05
 set_log_level(20)
 
 
