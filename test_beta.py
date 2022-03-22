@@ -197,10 +197,7 @@ class NSSolver:
               (1. / Gamma) * inner(pder_new, y) * dx
 
         # molecular field evolution
-        if t < 1 or t > 4:
-            field = interpolate(vIC(), V)
-        else:
-            field = interpolate(pointRight(), V)
+        field = interpolate(vIC(), V)
 
         F_pder = inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
                dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
