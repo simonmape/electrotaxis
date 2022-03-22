@@ -276,7 +276,6 @@ scalar_space = FunctionSpace(mesh, P1)
 E = interpolate(fixedField(), V)
 right = interpolate(pointRight(), V)
 up = interpolate(pointUp(), V)
-phi_load = Function(scalar_space)
 sumstat = np.zeros((numSteps, 4))
 
 for i in tqdm(range(numSteps)):
@@ -290,9 +289,9 @@ for i in tqdm(range(numSteps)):
     solver.advance_one_step(t)
 
     # Compute gradients of phase field to ID regions
-    phigrad = project(grad(phi_load), V)
-    angle_hor = project(-inner(grad(phi_load), right)/sqrt(inner(grad(phi_load),grad(phi_load))+0.005), W)
-    angle_ver = project(-inner(grad(phi_load), up)/sqrt(inner(grad(phi_load),grad(phi_load))+0.005), W)
+    phigrad = project(grad(phi), V)
+    angle_hor = project(-inner(grad(phi), right)/sqrt(inner(grad(phi),grad(phi))+0.005), W)
+    angle_ver = project(-inner(grad(phi), up)/sqrt(inner(grad(phi),grad(phi))+0.005), W)
 
     # Compute leading edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
@@ -319,4 +318,3 @@ for i in tqdm(range(numSteps)):
         print('trailing', i, e)
 
 np.savetxt('beta_results/'+'test_beta_'+str(beta).replace('.','_')+'.txt',sumstat)
-
