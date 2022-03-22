@@ -302,8 +302,8 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 0] = U*assemble(v_load[0] * dx_sub(1)) / area
-        sumstat[i, 1] = w_sa*assemble(p_load[0] * dx_sub(1)) / area
+        sumstat[i, 0] = assemble(v_load[0] * dx_sub(1)) / area
+        sumstat[i, 1] = 100*w_sa*assemble(p_load[0] * dx_sub(1)) / area
     except Exception as e:
         print('leading',i, e)
 
@@ -314,8 +314,8 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 2] = U*assemble(v_load[0]  * dx_sub(1)) / area
-        sumstat[i, 3] = w_sa*assemble(p_load[0] * dx_sub(1)) / area
+        sumstat[i, 2] = assemble(v_load[0]  * dx_sub(1)) / area
+        sumstat[i, 3] = 100*w_sa*assemble(p_load[0] * dx_sub(1)) / area
     except Exception as e:
         print('trailing', i, e)
 
