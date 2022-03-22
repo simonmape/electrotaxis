@@ -286,7 +286,6 @@ for i in tqdm(range(numSteps)):
     p = solver.p_old
     v = solver.v_old
 
-
     # Advance one time step in the simulation
     solver.advance_one_step(t)
 
