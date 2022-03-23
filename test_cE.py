@@ -53,12 +53,12 @@ minphi_b = 0.25
 numSteps = int(1.5 / dt)  # electrotaxis time is 10 hours
 num_w = 25
 num_u = 25
+U = 3600
 
 # Set simulation parameters we do inference on
 cE = float(sys.argv[1])
 beta = 0.4
 set_log_level(20)
-
 
 # Define main expressions
 class pIC(UserExpression):
@@ -278,7 +278,7 @@ scalar_space = FunctionSpace(mesh, P1)
 E = interpolate(fixedField(), V)
 right = interpolate(pointRight(), V)
 up = interpolate(pointUp(), V)
-sumstat = np.zeros((numSteps, 4))
+sumstat = np.zeros((numSteps, 10))
 
 for i in tqdm(range(numSteps)):
     t = i * dt
@@ -302,10 +302,10 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 0] = assemble(v_load[0] * dx_sub(1)) / area
-        sumstat[i, 1] = 100*w_sa*assemble(p_load[0] * dx_sub(1)) / area
+        sumstat[i, 0] = U * assemble(v[0] * dx_sub(1)) / area
+        sumstat[i, 1] = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
     except Exception as e:
-        print('leading',i, e)
+        print('leading', i, e)
 
     # Compute trailing edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
@@ -314,11 +314,54 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 2] = assemble(v_load[0]  * dx_sub(1)) / area
-        sumstat[i, 3] = 100*w_sa*assemble(p_load[0] * dx_sub(1)) / area
+        sumstat[i, 2] = U * assemble(v[0] * dx_sub(1)) / area
+        sumstat[i, 3] = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
     except Exception as e:
-        print('trailing', i, e)
+        print('trailng', i, e)
 
+    # Compute top zone speed
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: angle_ver(x) > min_angle)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        top_vel = U * assemble(v[0] * dx_sub(1)) / area
+        top_pol = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+    except Exception as e:
+        print('top', i, e)
 
+    # Compute bottom zone speed
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: angle_ver(x) < -min_angle)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        bottom_vel = U * assemble(v[0] * dx_sub(1)) / area
+        bottom_pol = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+    except Exception as e:
+        print('bottom', i, e)
+
+    try:
+        sumstat[i, 4] = 0.5 * (top_vel + bottom_vel)
+        sumstat[i, 5] = 0.5 * (top_pol + bottom_pol)
+    except:
+        pass
+
+    # Compute bulk directionality and speed
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: phi_load(x) > 0.5)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        sumstat[i, 6] = assemble((inner(100*p+v, E) / sqrt(inner(100*p+v, 100*p+v))) * dx_sub(1)) / area
+        sumstat[i, 7] = U * assemble(v[0] * dx_sub(1)) / area
+        sumstat[i, 8] = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+        sumstat[i,9] = assemble(abs(100*p[0] + v[0]) * dx_sub(1)) / area
+
+    except Exception as e:
+        print('bulk', i, e)
 
 np.savetxt('cE_results/'+'test_cE_'+str(cE).replace('.','_')+'.txt',sumstat)
