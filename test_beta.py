@@ -267,7 +267,6 @@ class NSSolver:
         except:
             self.phider_old.assign(phider_new)
 
-
 # Defining the problem
 solver = NSSolver()
 
