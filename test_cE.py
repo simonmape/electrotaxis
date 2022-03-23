@@ -55,8 +55,8 @@ num_w = 25
 num_u = 25
 
 # Set simulation parameters we do inference on
-cE = 0.2
-beta = float(sys.argv[1])
+cE = float(sys.argv[1])
+beta = 0.4
 set_log_level(20)
 
 
@@ -118,7 +118,6 @@ class pointUp(UserExpression):
     def value_shape(self):
         return (2,)
 
-
 class NSSolver:
     def __init__(self):
         # Define the boundaries
@@ -169,9 +168,9 @@ class NSSolver:
 
         # Navier-Stokes scheme
         print('Navier-Stokes')
-        F_v = eta*inner(nabla_grad(v_new), nabla_grad(y)) * dx + \
+        F_v = eta * inner(nabla_grad(v_new), nabla_grad(y)) * dx + \
               gamma * inner(v_new, y) * dx + dot(nabla_grad(pr_new), y) * dx - \
-              zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
+              inner(outer(p_old, p_old), nabla_grad(y)) * dx
 
         F_incomp = div(v_new) * w * dx  # corresponding to incompressibility condition
         F_flow = F_v + F_incomp  # total variational formulation of flow problem
@@ -197,12 +196,16 @@ class NSSolver:
               (1. / Gamma) * inner(pder_new, y) * dx
 
         # molecular field evolution
-        field = interpolate(vIC(), V)
+        if t < 1 or t > 4:
+            field = interpolate(vIC(), V)
+        else:
+            field = interpolate(pointRight(), V)
 
         F_pder = inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
-               dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
-               cE * (1 + inner(nabla_grad(phi_old),nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old),nabla_grad(phi_old))) ) * inner(field, z) * dx - \
-               kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
+                 dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
+                 cE * (1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
+                    1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, z) * dx - \
+                 kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
 
         F_pols = F_p + F_pder
         J = derivative(F_pols, pols_new, dU)
@@ -226,7 +229,7 @@ class NSSolver:
                 M * dot(nabla_grad(phider_new), nabla_grad(w1)) * dx
 
         F_phider = phider_new * w2 * dx - (a / (2 * phicr ** 4)) * phi_new * (phi_new - phi0) * (
-                    2 * phi_new - phi0) * w2 * dx - \
+                2 * phi_new - phi0) * w2 * dx - \
                    k * dot(nabla_grad(phi_new), nabla_grad(w2)) * dx + \
                    (alpha / (2 * phicr)) * dot(p_new, p_new) * w2 * dx + beta * div(p_new) * w2 * dx
 
@@ -299,8 +302,8 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 0] = assemble(v[0] * dx_sub(1)) / area
-        sumstat[i, 1] = 100*w_sa*assemble(p[0] * dx_sub(1)) / area
+        sumstat[i, 0] = assemble(v_load[0] * dx_sub(1)) / area
+        sumstat[i, 1] = 100*w_sa*assemble(p_load[0] * dx_sub(1)) / area
     except Exception as e:
         print('leading',i, e)
 
@@ -311,9 +314,11 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 2] = assemble(v[0]  * dx_sub(1)) / area
-        sumstat[i, 3] = 100*w_sa*assemble(p[0] * dx_sub(1)) / area
+        sumstat[i, 2] = assemble(v_load[0]  * dx_sub(1)) / area
+        sumstat[i, 3] = 100*w_sa*assemble(p_load[0] * dx_sub(1)) / area
     except Exception as e:
         print('trailing', i, e)
 
-np.savetxt('beta_results/'+'test_beta_'+str(beta).replace('.','_')+'.txt',sumstat)
+
+
+np.savetxt('cE_results/'+'test_cE_'+str(cE).replace('.','_')+'.txt',sumstat)
