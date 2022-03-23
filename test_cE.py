@@ -351,7 +351,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute bulk directionality and speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: phi_load(x) > 0.5)
+    region = AutoSubDomain(lambda x, on: phi(x) > 0.5)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
