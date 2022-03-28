@@ -55,8 +55,9 @@ num_w = 25
 num_u = 25
 
 # Set simulation parameters we do inference on
-cE = 0.05
-beta = 0.05
+cE = 0.4
+beta = 0.3
+delta_ph = float(sys.argv[1])
 set_log_level(20)
 
 
@@ -204,7 +205,7 @@ class NSSolver:
 
         F_pder = inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
                dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
-               cE * (1 + inner(nabla_grad(phi_old),nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old),nabla_grad(phi_old))) ) * inner(field, z) * dx - \
+               cE * (1 + delta_ph*inner(nabla_grad(phi_old),nabla_grad(field))/(1+inner(nabla_grad(phi_old),nabla_grad(field))) ) * inner(field, z) * dx - \
                kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
 
         F_pols = F_p + F_pder
@@ -274,10 +275,12 @@ class NSSolver:
 # Defining the problem
 solver = NSSolver()
 
-# Make files to store the simulation data
-timeseries_phi = TimeSeries('results/diff_phenotype')
-timeseries_p =  TimeSeries('results/diff_phenotype')
-timeseries_v = TimeSeries('results/diff_phenotype')
+# Define the functions to be loaded here
+scalar_space = FunctionSpace(mesh, P1)
+E = interpolate(fixedField(), V)
+right = interpolate(pointRight(), V)
+up = interpolate(pointUp(), V)
+sumstat = np.zeros((numSteps, 10))
 
 for i in tqdm(range(numSteps)):
     t = i * dt
@@ -286,11 +289,82 @@ for i in tqdm(range(numSteps)):
     p = solver.p_old
     v = solver.v_old
 
-    # Save variables
-    timeseries_phi.store(phi.vector(), t)
-    timeseries_p.store(p.vector(), t)
-    timeseries_v.store(v.vector(), t)
-
     # Advance one time step in the simulation
     solver.advance_one_step(t)
+
+    # Compute gradients of phase field to ID regions
+    phigrad = project(grad(phi), V)
+    angle_hor = project(-inner(grad(phi), right)/sqrt(inner(grad(phi),grad(phi))+0.005), W)
+    angle_ver = project(-inner(grad(phi), up)/sqrt(inner(grad(phi),grad(phi))+0.005), W)
+
+    # Compute leading edge outgrowth
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: angle_hor(x) > min_angle)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        sumstat[i, 0] = U * assemble(v[0] * dx_sub(1)) / area
+        sumstat[i, 1] = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+    except Exception as e:
+        print('leading', i, e)
+
+    # Compute trailing edge outgrowth
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: angle_hor(x) < -min_angle)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        sumstat[i, 2] = U * assemble(v[0] * dx_sub(1)) / area
+        sumstat[i, 3] = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+    except Exception as e:
+        print('trailng', i, e)
+
+    # Compute top zone speed
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: angle_ver(x) > min_angle)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        top_vel = U * assemble(v[0] * dx_sub(1)) / area
+        top_pol = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+    except Exception as e:
+        print('top', i, e)
+
+    # Compute bottom zone speed
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: angle_ver(x) < -min_angle)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        bottom_vel = U * assemble(v[0] * dx_sub(1)) / area
+        bottom_pol = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+    except Exception as e:
+        print('bottom', i, e)
+
+    try:
+        sumstat[i, 4] = 0.5 * (top_vel + bottom_vel)
+        sumstat[i, 5] = 0.5 * (top_pol + bottom_pol)
+    except:
+        pass
+
+    # Compute bulk directionality and speed
+    cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
+    region = AutoSubDomain(lambda x, on: phi(x) > 0.5)
+    region.mark(cf, 1)
+    dx_sub = Measure('dx', subdomain_data=cf)
+    area = assemble(E[0] * dx_sub(1))
+    try:
+        sumstat[i, 6] = assemble((inner(100*p+v, E) / sqrt(inner(100*p+v, 100*p+v))) * dx_sub(1)) / area
+        sumstat[i, 7] = U * assemble(v[0] * dx_sub(1)) / area
+        sumstat[i, 8] = 100*w_sa * assemble(p[0] * dx_sub(1)) / area
+        sumstat[i,9] = assemble(abs(100*p[0] + v[0]) * dx_sub(1)) / area
+
+    except Exception as e:
+        print('bulk', i, e)
+
+np.savetxt('cE_results/'+'test_cE_'+str(cE).replace('.','_')+'.txt',sumstat)
 
