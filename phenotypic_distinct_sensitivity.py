@@ -366,5 +366,5 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('cE_results/'+'test_cE_'+str(cE).replace('.','_')+'.txt',sumstat)
+np.savetxt('delta_ph_results/'+'test_delta_ph_'+str(cE).replace('.','_')+'.txt',sumstat)
 
