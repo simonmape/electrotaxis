@@ -26,10 +26,8 @@ phasespace = FunctionSpace(mesh, phasespace_element)
 polarityspace = FunctionSpace(mesh, polarityspace_element)
 flowspace = FunctionSpace(mesh, flowspace_element)
 
-polarity_assigner = FunctionAssigner(V, V)
-stress_assigner = FunctionAssigner(TS, TS)
+polarity_assigner = FunctionAssigner(V, flowspace.sub(0))
 velocity_assigner = FunctionAssigner(flowspace.sub(0), V)
-pressure_assigner = FunctionAssigner(flowspace.sub(1), W)
 phi_assigner = FunctionAssigner(W, W)
 velocity_assigner_inv = FunctionAssigner(V, flowspace.sub(0))
 pressure_assigner_inv = FunctionAssigner(W, flowspace.sub(1))
@@ -219,7 +217,6 @@ for i in tqdm(range(numSteps)):
                                                                       preconditioner='ilu'))
 
     # ASSIGN ALL VARIABLES FOR NEW STEP
-    p_old.assign(p_new)
+    polarity_assigner.assign(p_old, pols_new.sub(0))
     velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
-    phi_old.assign(phi_new)
-    pressure_assigner_inv.assign(pr_old, vpr_new.sub(1))
+    phi_old.assign(phis_new.sub(0))
