@@ -200,7 +200,6 @@ for i in tqdm(range(numSteps)):
     L_v = inner(outer(p_old, p_old), nabla_grad(y)) * dx
     solve(a_v == L_v, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='gmres',
                                                                       preconditioner='ilu'))
-
     # POLARITY EVOLUTION #
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
@@ -208,7 +207,7 @@ for i in tqdm(range(numSteps)):
             cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
                 1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
-    solve(a_pol == L_pol, p_new, bcs_pol, solver_parameters=dict(linear_solver='gmres',
+    solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='gmres',
                                                                  preconditioner='ilu'))
 
     # PHASE FIELD PROBLEM#
