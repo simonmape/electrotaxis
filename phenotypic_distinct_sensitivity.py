@@ -54,8 +54,8 @@ numSteps = int(10 / dt)  # electrotaxis time is 10 hours
 U = 3600
 
 # Set simulation parameters we do inference on
-cE = 0.4
-beta = 0.3
+cE = 0.3
+beta = 0.4
 delta_ph = float(sys.argv[1])
 set_log_level(20)
 
@@ -365,5 +365,5 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('delta_ph_results/'+'test_delta_ph_'+str(cE).replace('.','_')+'.txt',sumstat)
+np.savetxt('delta_ph_results/'+'test_delta_ph_'+str(delta_ph).replace('.','_')+'.txt',sumstat)
 
