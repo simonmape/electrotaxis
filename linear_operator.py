@@ -198,7 +198,7 @@ for i in tqdm(range(numSteps)):
 
     #VELOCITY
     L_v = zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
-    solve(a_v == L_v, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='gmres',
+    solve(a_v == L_v, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='superlu_dist',
                                                                       preconditioner='ilu'))
     # POLARITY EVOLUTION #
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
