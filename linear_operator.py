@@ -215,7 +215,7 @@ for i in tqdm(range(numSteps)):
             (a / (2 * phicr ** 4)) * phi_old * (phi_old - phi0) * (2 * phi_old - phi0) * w2 * dx - \
             (alpha / (2 * phicr)) * dot(p_old, p_old) * w2 * dx - \
             beta * div(p_new) * w2 * dx
-    solve(a_phi == L_phi, phi_new, bcs_phi, solver_parameters=dict(linear_solver='gmres',
+    solve(a_phi == L_phi, phis_new, bcs_phi, solver_parameters=dict(linear_solver='gmres',
                                                                       preconditioner='ilu'))
 
     # ASSIGN ALL VARIABLES FOR NEW STEP
