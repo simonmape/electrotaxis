@@ -11,7 +11,7 @@ import os
 os.environ["OMP_NUM_THREADS"] = "1"
 
 # Simulator settings
-num_points = 70
+num_points = 50
 mesh = RectangleMesh(Point(0.0, 20.0), Point(60, 80), num_points, num_points)
 
 W = FunctionSpace(mesh, 'P', 1)
