@@ -152,7 +152,7 @@ dP = TrialFunction(polarityspace)
 (dp1, dp2) = split(dP)
 
 a_pol = (1. / dt) * dot(dp1,yp) * dx + (1. / Gamma) * inner(dp2, yp) * dx + \
-       inner(dp2, zp) * dx - kappa * inner(nabla_grad(dp1), nabla_grad(zp)) * dx \
+       inner(dp2, zp) * dx - kappa * inner(nabla_grad(dp1), nabla_grad(zp)) * dx
 zero = Expression(('0.0', '0.0', '0.0'), degree=2)
 bcs_pol = DirichletBC(polarityspace, zero, boundary)
 
@@ -164,7 +164,7 @@ w1, w2 = split(w1w2)
 dphi = TrialFunction(phasespace)
 (dphi1, dphi2) = split(dphi)
 a_phi = (1. / dt) * dphi1 * w1 * dx + M * dot(nabla_grad(dphi2), nabla_grad(w1)) * dx +\
-        dphi2 * w2 * dx - k * dot(nabla_grad(dphi1), nabla_grad(w2)) * dx \
+        dphi2 * w2 * dx - k * dot(nabla_grad(dphi1), nabla_grad(w2)) * dx
 zero = Expression(('0.0','0.0'), degree=2)
 bcs_phi = DirichletBC(phasespace, zero, boundary)
 
