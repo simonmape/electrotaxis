@@ -38,7 +38,6 @@ parameters["form_compiler"]["quadrature_degree"] = 3
 parameters["form_compiler"]["optimize"] = True
 parameters["form_compiler"]["cpp_optimize"] = True
 parameters["krylov_solver"]["nonzero_initial_guess"] = True
-parameters["num_threads"] = 48
 set_log_level(20)
 
 # Set fixed simulation parameters
