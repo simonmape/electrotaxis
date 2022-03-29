@@ -126,12 +126,6 @@ class pointUp(UserExpression):
 boundary = 'near(x[1],20) || near(x[1], 80) || near(x[0], 0) || near(x[0],60)'
 n = FacetNormal(mesh)
 
-    def E(self, u):
-        return sym(nabla_grad(u))
-
-    def W(self, u):
-        return skew(nabla_grad(u))
-
 #FLOW PROBLEM
 vpr_new = Function(flowspace)
 v_new, pr_new = split(vpr_new)
