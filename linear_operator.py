@@ -59,7 +59,6 @@ beta = 0.4
 delta_ph = float(sys.argv[1])
 set_log_level(20)
 
-
 # Define main expressions
 class pIC(UserExpression):
     def eval(self, value, x):
@@ -68,14 +67,12 @@ class pIC(UserExpression):
     def value_shape(self):
         return (2,)
 
-
 class vIC(UserExpression):
     def eval(self, value, x):
         value[:] = [0, 0]
 
     def value_shape(self):
         return (2,)
-
 
 class phiIC(UserExpression):
     def eval(self, value, x):
@@ -86,14 +83,12 @@ class phiIC(UserExpression):
     def value_shape(self):
         return ()
 
-
 class scalarZero(UserExpression):
     def eval(self, value, x):
         value[:] = 0
 
     def value_shape(self):
         return ()
-
 
 class fixedField(UserExpression):
     def eval(self, value, x):
@@ -102,14 +97,12 @@ class fixedField(UserExpression):
     def value_shape(self):
         return (2,)
 
-
 class pointRight(UserExpression):
     def eval(self, value, x):
         value[:] = [1, 0]
 
     def value_shape(self):
         return (2,)
-
 
 class pointUp(UserExpression):
     def eval(self, value, x):
@@ -119,23 +112,21 @@ class pointUp(UserExpression):
         return (2,)
 
 
-class NSSolver:
-    def __init__(self):
-        # Define the boundaries
-        self.boundary = 'near(x[1],20) || near(x[1], 80) || near(x[0], 0) || near(x[0],60)'
-        self.n = FacetNormal(mesh)
 
-        # Assign initial conditions for velocity and pressure
-        self.v_old = interpolate(vIC(), V)
-        self.pr_old = TestFunction(W)  # interpolate(scalarZero(),W)
+self.boundary = 'near(x[1],20) || near(x[1], 80) || near(x[0], 0) || near(x[0],60)'
+self.n = FacetNormal(mesh)
 
-        # Assign initial conditions for phi fields
-        self.phi_old = interpolate(phiIC(), W)
-        self.phider_old = TestFunction(W)  # interpolate(scalarZero(),W)
+# Assign initial conditions for velocity and pressure
+self.v_old = interpolate(vIC(), V)
+self.pr_old = TestFunction(W)  # interpolate(scalarZero(),W)
 
-        # Assign initial conditions for polarity fields
-        self.p_old = interpolate(pIC(), V)
-        self.pder_old = TestFunction(V)  # interpolate(vIC(),V)
+# Assign initial conditions for phi fields
+self.phi_old = interpolate(phiIC(), W)
+self.phider_old = TestFunction(W)  # interpolate(scalarZero(),W)
+
+# Assign initial conditions for polarity fields
+self.p_old = interpolate(pIC(), V)
+self.pder_old = TestFunction(V)  # interpolate(vIC(),V)
 
     def E(self, u):
         return sym(nabla_grad(u))
@@ -143,136 +134,72 @@ class NSSolver:
     def W(self, u):
         return skew(nabla_grad(u))
 
-    def advance_one_step(self, t):
-        # Load objects from previous time step
-        v_old = self.v_old
-        pr_old = self.pr_old
+#Define the variational test functions
 
-        phi_old = self.phi_old
-        phider_old = self.phider_old
-
-        p_old = self.p_old
-        pder_old = self.pder_old
-
-        vpr_new = Function(flowspace)
-        phis_new = Function(phasespace)
-        pols_new = Function(polarityspace)
-
-        # FLOW PROBLEM#
-        yw = TestFunction(flowspace)
-        y, w = split(yw)
-
-        dU = TrialFunction(flowspace)
-        (du1, du2) = split(dU)
-
-        v_new, pr_new = split(vpr_new)
-
-        # Navier-Stokes scheme
-        print('Navier-Stokes')
-        F_v = eta*inner(nabla_grad(v_new), nabla_grad(y)) * dx + \
-              gamma * inner(v_new, y) * dx + dot(nabla_grad(pr_new), y) * dx - \
-              zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
-
-        F_incomp = div(v_new) * w * dx  # corresponding to incompressibility condition
-        F_flow = F_v + F_incomp  # total variational formulation of flow problem
-
-        # Set boundary conditions#
-        zero = Expression(('0.0', '0.0', '0.0'), degree=2)  # Expression(('0.0','0.0','0.0'), degree=2)
-        bcs = DirichletBC(flowspace, zero, self.boundary)  # set zero boundary condition
-
-        J = derivative(F_flow, vpr_new, dU)
-        solve(F_flow == 0, vpr_new, bcs=bcs, J=J)  # solve the nonlinear variational problem
-        v_new, pr_new = split(vpr_new)
-        # POLARITY PROBLEM#
-        p_new, pder_new = split(pols_new)
-        yz = TestFunction(polarityspace)
-        y, z = split(yz)
-
-        dU = TrialFunction(polarityspace)
-        (du1, du2) = split(dU)
-
-        # polarity evolution
-        print('Polarity')
-        F_p = (1. / dt) * dot(p_new - p_old, y) * dx + inner(nabla_grad(p_new) * (v_new + w_sa * p_new), y) * dx + \
-              (1. / Gamma) * inner(pder_new, y) * dx
-
-        # molecular field evolution
-        if t < 1 or t > 4:
-            field = interpolate(vIC(), V)
-        else:
-            field = interpolate(pointRight(), V)
-
-        F_pder = inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
-               dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
-               cE * (1 + delta_ph*inner(nabla_grad(phi_old),nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old),nabla_grad(phi_old)))) * inner(field, z) * dx - \
-               kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
-
-        F_pols = F_p + F_pder
-        J = derivative(F_pols, pols_new, dU)
-
-        # Set boundary conditions#
-        zero = Expression(('0.0', '0.0', '0.0', '0.0'), degree=2)
-        bcs = DirichletBC(polarityspace, zero, self.boundary)  # set zero boundary condition
-        solve(F_pols == 0, pols_new, J=J, bcs=bcs)  # solve the nonlinear variational problem
-        p_new, pder_new = split(pols_new)
-
-        # PHASE FIELD PROBLEM#
-        print('Phi')
-        phi_new, phider_new = split(phis_new)
-        w1w2 = TestFunction(phasespace)
-        w1, w2 = split(w1w2)
-        dU = TrialFunction(phasespace)
-        (du1, du2) = split(dU)
-
-        # phi evolution
-        F_phi = (1. / dt) * (phi_new - phi_old) * w1 * dx + div(phi_new * (v_new + w_sa * p_new)) * w1 * dx + \
-                M * dot(nabla_grad(phider_new), nabla_grad(w1)) * dx
-
-        F_phider = phider_new * w2 * dx - (a / (2 * phicr ** 4)) * phi_new * (phi_new - phi0) * (
-                    2 * phi_new - phi0) * w2 * dx - \
-                   k * dot(nabla_grad(phi_new), nabla_grad(w2)) * dx + \
-                   (alpha / (2 * phicr)) * dot(p_new, p_new) * w2 * dx + beta * div(p_new) * w2 * dx
-
-        F_phase = F_phi + F_phider
-
-        zero = Expression(('0.0', '0.0'), degree=2)
-        bcs = DirichletBC(phasespace, zero, self.boundary)  # set zero boundary condition
-        J = derivative(F_phase, phis_new, dU)
-
-        solve(F_phase == 0, phis_new, bcs=bcs, J=J)
-        phi_new, phider_new = split(phis_new)
-
-        # ASSIGN ALL VARIABLES FOR NEW STEP
-        # Flow problem variables
-        v_new, pr_new = vpr_new.split(True)
-        self.v_old.assign(v_new)
-
-        try:
-            self.pr_old.assign(pr_new)
-        except:
-            self.pr_old = pr_new
-
-        # Polarity problem variables
-        p_new, pder_new = pols_new.split(True)
-        self.p_old.assign(p_new)
-
-        try:
-            self.pder_old = pder_new
-        except:
-            self.pder_old.assign(pder_new)
-
-        # Phase problem variables
-        phi_new, phider_new = phis_new.split(True)
-        self.phi_old.assign(phi_new)
-
-        try:
-            self.phider_old = phider_new
-        except:
-            self.phider_old.assign(phider_new)
+phis_new = Function(phasespace)
 
 
-# Defining the problem
-solver = NSSolver()
+
+
+
+
+
+#FLOW PROBLEM
+vpr_new = Function(flowspace)
+v_new, pr_new = split(vpr_new)
+
+yw = TestFunction(flowspace)
+y, w = split(yw)
+
+dU = TrialFunction(flowspace)
+(du1, du2) = split(dU)
+
+a_v = eta*inner(nabla_grad(du1), nabla_grad(y)) * dx + \
+      gamma * inner(du1, y) * dx + dot(nabla_grad(du2), y) * dx + \
+      div(du1) * w * dx
+
+
+
+
+
+#POLARITY PROBLEM
+pols_new = Function(polarityspace)
+p_new, pder_new = split(pols_new)
+yz = TestFunction(polarityspace)
+yp, zp = split(yz)
+
+dP = TrialFunction(polarityspace)
+(dp1, dp2) = split(dP)
+
+a_pol = (1. / dt) * dot(dp1,yp) * dx + (1. / Gamma) * inner(dp2, yp) * dx + \
+       inner(dp2, zp) * dx - kappa * inner(nabla_grad(dp1), nabla_grad(zp)) * dx \
+
+
+L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
+       (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
+       dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
+       cE * (1 + delta_ph*inner(nabla_grad(phi_old),nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old),nabla_grad(phi_old)))) * inner(field, zp) * dx + \
+       beta * inner(nabla_grad(phi_old), zp) * dx
+
+# PHASE FIELD PROBLEM#
+phi_new, phider_new = split(phis_new)
+w1w2 = TestFunction(phasespace)
+w1, w2 = split(w1w2)
+dphi = TrialFunction(phasespace)
+(dphi1, dphi2) = split(dphi)
+
+# phi evolution
+
+
+a_phi = (1. / dt) * dphi1 * w1 * dx + M * dot(nabla_grad(dphi2), nabla_grad(w1)) * dx +\
+        dphi2 * w2 * dx - k * dot(nabla_grad(dphi1), nabla_grad(w2)) * dx \
+
+L_phi = (1. / dt) * phi_old * w1 * dx - div(phi_old * (v_new + w_sa * p_old)) * w1 * dx +\
+        (a / (2 * phicr ** 4)) * phi_old * (phi_old - phi0) * (2 * phi_old - phi0) * w2 * dx -\
+        (alpha / (2 * phicr)) * dot(p_old, p_old) * w2 * dx -\
+        beta * div(p_new) * w2 * dx
+
+
 
 # Define the functions to be loaded here
 scalar_space = FunctionSpace(mesh, P1)
@@ -283,6 +210,60 @@ sumstat = np.zeros((numSteps, 10))
 
 for i in tqdm(range(numSteps)):
     t = i * dt
+
+    # molecular field evolution
+    if t < 1 or t > 4:
+        field = interpolate(vIC(), V)
+    else:
+        field = interpolate(pointRight(), V)
+
+    #VELOCITY
+    L_v = inner(outer(p_old, p_old), nabla_grad(y)) * dx
+
+
+    # POLARITY EVOLUTION #
+    L_pol = (1. / dt) * dot(p_old, y) * dx - dot(nabla_grad(p_old) * (v_old + w_sa * p_old), y) * dx
+    solve(a_pol == L_pol, p_new, bcs_pol, solver_parameters=dict(linear_solver='gmres',
+                                                                 preconditioner='ilu'))
+    print('polarity', p_new.vector().get_local().min(), p_new.vector().get_local().max())
+
+    # STRESS TENSOR
+    L_str = eta * inner(sym(nabla_grad(v_old)), z) * dx + (eta / E_bulk * dt) * inner(str_old, z) * dx
+    solve(a_str == L_str, str_new, bcs=bcs_str, solver_parameters=dict(linear_solver='gmres',
+                                                                 preconditioner='ilu'))
+    print('stress', str_new.vector().get_local().min(), str_new.vector().get_local().max())
+
+    # FLOW PROBLEM#
+    L_flow = - zeta * dot(div(outer(p_new, p_new)), y1) * dx
+    solve(a_flow == L_flow, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='gmres',
+                                                                 preconditioner='ilu'))
+    print('velocity', vpr_new.sub(0).vector().get_local().min(), vpr_new.sub(0).vector().get_local().max())
+    # PHASE FIELD PROBLEM#
+    L_phi = (1. / dt) * phi_old * w2 * dx + dot(v_new, nabla_grad(phi_old)) * w2 * dx
+    solve(a_phi == L_phi, phi_new, bcs_phi, solver_parameters=dict(linear_solver='gmres',
+                                                                      preconditioner='ilu'))
+    print('phi', phi_new.vector().get_local().min(), phi_new.vector().get_local().max())
+
+    # ASSIGN ALL VARIABLES FOR NEW STEP
+    str_old.assign(str_new)
+    p_old.assign(p_new)
+    velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
+    phi_old.assign(phi_new)
+    pressure_assigner_inv.assign(pr_old, vpr_new.sub(1))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     # Rename variables
     phi = solver.phi_old
     p = solver.p_old
