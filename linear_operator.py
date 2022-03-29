@@ -192,9 +192,9 @@ for i in tqdm(range(numSteps)):
 
     # molecular field evolution
     if t < 1 or t > 4:
-        field = interpolate(vIC(), V)
+        field = vIC()
     else:
-        field = interpolate(pointRight(), V)
+        field = pointRight()
 
     #VELOCITY
     L_v = zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
