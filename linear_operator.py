@@ -153,7 +153,7 @@ dP = TrialFunction(polarityspace)
 
 a_pol = (1. / dt) * dot(dp1,yp) * dx + (1. / Gamma) * inner(dp2, yp) * dx + \
        inner(dp2, zp) * dx - kappa * inner(nabla_grad(dp1), nabla_grad(zp)) * dx \
-zero = Expression(('0.0', '0.0', '0.0'), degree=2))
+zero = Expression(('0.0', '0.0', '0.0'), degree=2)
 bcs_pol = DirichletBC(polarityspace, zero, boundary)
 
 # PHASE FIELD PROBLEM#
