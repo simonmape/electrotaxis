@@ -219,7 +219,6 @@ for i in tqdm(range(numSteps)):
                                                                       preconditioner='ilu'))
 
     # ASSIGN ALL VARIABLES FOR NEW STEP
-    str_old.assign(str_new)
     p_old.assign(p_new)
     velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
     phi_old.assign(phi_new)
