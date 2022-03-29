@@ -6,6 +6,9 @@ import numpy as np
 from ufl import nabla_div
 from tqdm import tqdm
 import sys
+import os
+
+os.environ["OMP_NUM_THREADS"] = "1"
 
 # Simulator settings
 num_points = 70
