@@ -207,7 +207,7 @@ for i in tqdm(range(numSteps)):
             cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
                 1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
-    solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='gmres',
+    solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
                                                                  preconditioner='ilu'))
 
     # PHASE FIELD PROBLEM#
@@ -215,7 +215,7 @@ for i in tqdm(range(numSteps)):
             (a / (2 * phicr ** 4)) * phi_old * (phi_old - phi0) * (2 * phi_old - phi0) * w2 * dx - \
             (alpha / (2 * phicr)) * dot(p_old, p_old) * w2 * dx - \
             beta * div(p_new) * w2 * dx
-    solve(a_phi == L_phi, phis_new, bcs_phi, solver_parameters=dict(linear_solver='gmres',
+    solve(a_phi == L_phi, phis_new, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
                                                                       preconditioner='ilu'))
 
     # ASSIGN ALL VARIABLES FOR NEW STEP
