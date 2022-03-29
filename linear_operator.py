@@ -27,10 +27,8 @@ polarityspace = FunctionSpace(mesh, polarityspace_element)
 flowspace = FunctionSpace(mesh, flowspace_element)
 
 polarity_assigner = FunctionAssigner(V, polarityspace.sub(0))
-velocity_assigner = FunctionAssigner(flowspace.sub(0), V)
-phi_assigner = FunctionAssigner(W, W)
+phi_assigner = FunctionAssigner(W, phasespace.sub(0))
 velocity_assigner_inv = FunctionAssigner(V, flowspace.sub(0))
-pressure_assigner_inv = FunctionAssigner(W, flowspace.sub(1))
 
 # Set fenics parameters
 parameters["form_compiler"]["quadrature_degree"] = 3
@@ -219,4 +217,4 @@ for i in tqdm(range(numSteps)):
     # ASSIGN ALL VARIABLES FOR NEW STEP
     polarity_assigner.assign(p_old, pols_new.sub(0))
     velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
-    phi_old.assign(phis_new.sub(0))
+    phi_assigner.assign(phi_old,phis_new.sub(0))
