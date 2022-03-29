@@ -26,15 +26,19 @@ phasespace = FunctionSpace(mesh, phasespace_element)
 polarityspace = FunctionSpace(mesh, polarityspace_element)
 flowspace = FunctionSpace(mesh, flowspace_element)
 
-polarity_assigner = FunctionAssigner(V, polarityspace.sub(0))
-phi_assigner = FunctionAssigner(W, phasespace.sub(0))
 velocity_assigner_inv = FunctionAssigner(V, flowspace.sub(0))
+pressure_assigner_inv = FunctionAssigner(W, flowspace.sub(1))
+polarity_assigner_inv = FunctionAssigner(V, polarityspace.sub(0))
+polder_assigner_inv = FunctionAssigner(V, polarityspace.sub(0))
+phi_assigner_inv = FunctionAssigner(W, phasespace.sub(0))
+phider_assigner_inv = FunctionAssigner(W, phasespace.sub(0))
 
 # Set fenics parameters
 parameters["form_compiler"]["quadrature_degree"] = 3
 parameters["form_compiler"]["optimize"] = True
 parameters["form_compiler"]["cpp_optimize"] = True
 parameters["krylov_solver"]["nonzero_initial_guess"] = True
+parameters["num_threads"] = 48
 set_log_level(20)
 
 # Set fixed simulation parameters
@@ -116,8 +120,6 @@ class pointUp(UserExpression):
 
     def value_shape(self):
         return (2,)
-
-
 
 boundary = 'near(x[1],20) || near(x[1], 80) || near(x[0], 0) || near(x[0],60)'
 n = FacetNormal(mesh)
@@ -215,6 +217,6 @@ for i in tqdm(range(numSteps)):
                                                                       preconditioner='ilu'))
 
     # ASSIGN ALL VARIABLES FOR NEW STEP
-    polarity_assigner.assign(p_old, pols_new.sub(0))
+    polarity_assigner_inv.assign(p_old, pols_new.sub(0))
     velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
-    phi_assigner.assign(phi_old,phis_new.sub(0))
+    phi_assigner_inv.assign(phi_old,phis_new.sub(0))
