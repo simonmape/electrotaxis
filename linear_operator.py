@@ -193,7 +193,7 @@ for i in tqdm(range(numSteps)):
         field = interpolate(pointRight(), V)
 
     #VELOCITY
-    L_v = inner(outer(p_old, p_old), nabla_grad(y)) * dx
+    L_v = zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
     solve(a_v == L_v, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='gmres',
                                                                       preconditioner='ilu'))
     # POLARITY EVOLUTION #
