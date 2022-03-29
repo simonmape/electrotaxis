@@ -26,7 +26,7 @@ phasespace = FunctionSpace(mesh, phasespace_element)
 polarityspace = FunctionSpace(mesh, polarityspace_element)
 flowspace = FunctionSpace(mesh, flowspace_element)
 
-polarity_assigner = FunctionAssigner(V, V)
+polarity_assigner = FunctionAssigner(V, polarityspace.sub(0))
 velocity_assigner = FunctionAssigner(flowspace.sub(0), V)
 phi_assigner = FunctionAssigner(W, W)
 velocity_assigner_inv = FunctionAssigner(V, flowspace.sub(0))
