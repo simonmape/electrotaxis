@@ -70,7 +70,7 @@ U = 3600
 cE = 0.3
 beta = 0.4
 delta_ph = float(sys.argv[1])
-
+print(delta_ph)
 # Define main expressions
 class pIC(UserExpression):
     def eval(self, value, x):
