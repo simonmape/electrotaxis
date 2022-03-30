@@ -202,10 +202,10 @@ class NSSolver:
         else:
             field = interpolate(pointRight(), V)
 
-        F_pder = -inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
-               dot(p_old, p_old) * alpha * inner(p_new, z) * dx - \
+        F_pder = inner(pder_new, z) * dx + (alpha / phicr) * (phi_old - phicr) * inner(p_new, z) * dx - \
+               dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
                cE * (1 + delta_ph*inner(nabla_grad(phi_old),nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old),nabla_grad(phi_old)))) * inner(field, z) * dx - \
-               kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx + beta * inner(nabla_grad(phi_old), z) * dx
+               kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
 
         F_pols = F_p + F_pder
         J = derivative(F_pols, pols_new, dU)
@@ -365,5 +365,5 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('delta_ph_grad/'+'test_delta_ph_'+str(delta_ph).replace('.','_')+'.txt',sumstat)
+np.savetxt('delta_ph_grad2/'+'test_delta_ph_'+str(delta_ph).replace('.','_')+'.txt',sumstat)
 
