@@ -58,7 +58,7 @@ gamma = 0.04
 zeta = 0.01
 a = 1
 # cE=1
-Gamma = 1.
+Gamma = 1./2. #1.
 dt = 0.05
 min_angle = 0.05
 minphi = 0.5
@@ -298,5 +298,5 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('linear/' + 'test_delta_ph_' + str(delta_ph).replace('.', '_') + '.txt', sumstat)
+np.savetxt('linear/' + 'fast_test_delta_ph_' + str(delta_ph).replace('.', '_') + '.txt', sumstat)
 
