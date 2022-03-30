@@ -202,8 +202,8 @@ class NSSolver:
         else:
             field = interpolate(pointRight(), V)
 
-        F_pder = inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
-               dot(p_old, p_old) * alpha * inner(p_new, z) * dx + \
+        F_pder = -inner(pder_new, z) * dx + (alpha / phicr) * inner((phi_old - phicr) * p_new, z) * dx - \
+               dot(p_old, p_old) * alpha * inner(p_new, z) * dx - \
                cE * (1 + delta_ph*inner(nabla_grad(phi_old),nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old),nabla_grad(phi_old)))) * inner(field, z) * dx - \
                kappa * inner(nabla_grad(p_new), nabla_grad(z)) * dx - beta * inner(nabla_grad(phi_old), z) * dx
 
