@@ -195,17 +195,28 @@ for i in tqdm(range(numSteps)):
         field = Expression(('0.0','0.0'), degree=2)
     else:
         field = Expression(('1.0','0.0'), degree=2)
+    # Compute gradients of phase field to ID regions
+    #phigrad = project(grad(phi_old), V)
+    angle_hor = project(-inner(grad(phi_old), right) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
+    angle_ver = project(-inner(grad(phi_old), up) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
 
     #VELOCITY
     L_v = zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
     solve(a_v == L_v, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='superlu_dist',
                                                                       preconditioner='ilu'))
     # POLARITY EVOLUTION #
+    # L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
+    #         (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
+    #         dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
+    #         cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
+    #             1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
+    #         beta * inner(nabla_grad(phi_old), zp) * dx
+
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
             dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-            cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
-                1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
+            cE * (1 + delta_ph * (abs(angle_hor)+abs(angle_ver)) / (
+            1 + (abs(angle_hor)+abs(angle_ver)))) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
 
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
@@ -223,11 +234,6 @@ for i in tqdm(range(numSteps)):
     polarity_assigner_inv.assign(p_old, pols_new.sub(0))
     velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
     phi_assigner_inv.assign(phi_old,phis_new.sub(0))
-
-    # Compute gradients of phase field to ID regions
-    phigrad = project(grad(phi_old), V)
-    angle_hor = project(-inner(grad(phi_old), right) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
-    angle_ver = project(-inner(grad(phi_old), up) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
 
     # Compute leading edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
@@ -290,7 +296,7 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        print(assemble(inner(nabla_grad(phi_old), nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old), nabla_grad(phi_old))) * dx_sub(1))/area)
+        #print(assemble(inner(nabla_grad(phi_old), nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old), nabla_grad(phi_old))) * dx_sub(1))/area)
         sumstat[i, 6] = assemble((inner(100 * p_old + v_old, E) / sqrt(inner(100 * p_old + v_old, 100 * p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble(p_old[0] * dx_sub(1)) / area
