@@ -69,7 +69,7 @@ U = 3600
 # Set simulation parameters we do inference on
 cE = 0.3
 beta = 0.4
-delta_ph = 0
+delta_ph = float(sys.argv[1])
 
 # Define main expressions
 class pIC(UserExpression):
