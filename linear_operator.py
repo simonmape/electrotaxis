@@ -207,6 +207,7 @@ for i in tqdm(range(numSteps)):
             cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
                 1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
+
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
                                                                  preconditioner='ilu'))
 
@@ -289,6 +290,7 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
+        print(assemble(inner(nabla_grad(phi_old), nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old), nabla_grad(phi_old))) * dx_sub(1))/area)
         sumstat[i, 6] = assemble((inner(100 * p_old + v_old, E) / sqrt(inner(100 * p_old + v_old, 100 * p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble(p_old[0] * dx_sub(1)) / area
