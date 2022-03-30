@@ -205,18 +205,11 @@ for i in tqdm(range(numSteps)):
     solve(a_v == L_v, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='superlu_dist',
                                                                       preconditioner='ilu'))
     # POLARITY EVOLUTION #
-    # L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
-    #         (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
-    #         dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-    #         cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
-    #             1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
-    #         beta * inner(nabla_grad(phi_old), zp) * dx
-
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
             dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-            cE * (1 + delta_ph * (abs(angle_hor)+abs(angle_ver)) / (
-            1 + (abs(angle_hor)+abs(angle_ver)))) * inner(field, zp) * dx + \
+            cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
+                1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
 
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
@@ -297,7 +290,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         #print(assemble(inner(nabla_grad(phi_old), nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old), nabla_grad(phi_old))) * dx_sub(1))/area)
-        sumstat[i, 6] = assemble((inner(100 * p_old + v_old, E) / sqrt(inner(100 * p_old + v_old, 100 * p_old + v_old))) * dx_sub(1)) / area
+        sumstat[i, 6] = assemble((inner(p_old + v_old, E) / sqrt(inner(p_old + v_old, p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble(p_old[0] * dx_sub(1)) / area
         sumstat[i, 9] = assemble(abs(100 * p_old[0] + v_old[0]) * dx_sub(1)) / area
