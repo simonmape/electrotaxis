@@ -250,7 +250,7 @@ for i in tqdm(range(numSteps)):
         sumstat[i, 2] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 3] = 100 * w_sa * assemble(p_old[0] * dx_sub(1)) / area
     except Exception as e:
-        print('trailng', i, e)
+        print('trailing', i, e)
 
     # Compute top zone speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
@@ -289,7 +289,7 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 6] = assemble((inner(100 * p + v, E) / sqrt(inner(100 * p + v, 100 * p + v))) * dx_sub(1)) / area
+        sumstat[i, 6] = assemble((inner(100 * p_old + v, E) / sqrt(inner(100 * p_old + v, 100 * p_old + v))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble(p_old[0] * dx_sub(1)) / area
         sumstat[i, 9] = assemble(abs(100 * p_old[0] + v_old[0]) * dx_sub(1)) / area
