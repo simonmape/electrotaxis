@@ -296,5 +296,5 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('linear/' + 'superposition_' + str(delta_ph).replace('.', '_') + '.txt', sumstat)
+np.savetxt('linear/' + 'superposition_' + '.txt', sumstat)
 
