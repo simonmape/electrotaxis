@@ -292,7 +292,7 @@ for i in tqdm(range(numSteps)):
         #print(assemble(inner(nabla_grad(phi_old), nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old), nabla_grad(phi_old))) * dx_sub(1))/area)
         sumstat[i, 6] = assemble((inner(p_old + v_old, E) / sqrt(inner(p_old + v_old, p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
-        sumstat[i, 8] = 100 * w_sa * assemble((1+dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
+        sumstat[i, 8] = 100 * w_sa * assemble((1/(1+f_field*fieldmag))*(1+dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
         sumstat[i, 9] = assemble(abs(100*(1/(1+f_field*fieldmag))*(1+f_field*dot(p_old,field)) * p_old[0] + v_old[0]) * dx_sub(1)) / area
 
     except Exception as e:
