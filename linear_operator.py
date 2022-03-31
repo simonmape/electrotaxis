@@ -58,9 +58,9 @@ gamma = 0.04
 zeta = 0.01
 a = 1
 # cE=1
-Gamma = 1./2. #1.
+Gamma = 1./4. #1.
 dt = 0.05
-min_angle = 0.05
+min_angle = 0.25
 minphi = 0.5
 minphi_b = 0.25
 numSteps = int(10 / dt)  # electrotaxis time is 10 hours
@@ -70,7 +70,7 @@ U = 3600
 cE = 0.3
 beta = 0.4
 delta_ph = float(sys.argv[1])
-print(delta_ph)
+
 # Define main expressions
 class pIC(UserExpression):
     def eval(self, value, x):

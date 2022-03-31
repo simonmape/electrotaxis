@@ -60,7 +60,7 @@ a = 1
 # cE=1
 Gamma = 1./4. #1.
 dt = 0.05
-min_angle = 0.05
+min_angle = 0.25
 minphi = 0.5
 minphi_b = 0.25
 numSteps = int(10 / dt)  # electrotaxis time is 10 hours
@@ -69,8 +69,7 @@ U = 3600
 # Set simulation parameters we do inference on
 cE = 0.3
 beta = 0.4
-delta_ph = float(sys.argv[1])
-print(delta_ph)
+
 # Define main expressions
 class pIC(UserExpression):
     def eval(self, value, x):
@@ -208,8 +207,7 @@ for i in tqdm(range(numSteps)):
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
             dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-            cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
-                1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
+            cE * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
 
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
