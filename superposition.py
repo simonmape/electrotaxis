@@ -192,8 +192,10 @@ for i in tqdm(range(numSteps)):
     # molecular field evolution
     if t < 1 or t > 4:
         field = Expression(('0.0','0.0'), degree=2)
+        fieldmag = 0
     else:
         field = Expression(('1.0','0.0'), degree=2)
+        fieldmag =1
     # Compute gradients of phase field to ID regions
     #phigrad = project(grad(phi_old), V)
     angle_hor = project(-inner(grad(phi_old), right) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
@@ -234,7 +236,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         sumstat[i, 0] = U * assemble(v_old[0] * dx_sub(1)) / area
-        sumstat[i, 1] = 100 * w_sa * assemble((1/(1+f_field*dot(field,field)))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
+        sumstat[i, 1] = 100 * w_sa * assemble((1/(1+f_field*fieldmag))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
     except Exception as e:
         print('leading', i, e)
 
@@ -246,7 +248,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         sumstat[i, 2] = U * assemble(v_old[0] * dx_sub(1)) / area
-        sumstat[i, 3] = 100 * w_sa * assemble((1/(1+f_field*dot(field,field)))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
+        sumstat[i, 3] = 100 * w_sa * assemble((1/(1+f_field*fieldmag))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
     except Exception as e:
         print('trailing', i, e)
 
@@ -258,7 +260,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         top_vel = U * assemble(v_old[0] * dx_sub(1)) / area
-        top_pol = 100 * w_sa * assemble((1/(1+f_field*dot(field,field)))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
+        top_pol = 100 * w_sa * assemble((1/(1+f_field*fieldmag))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
     except Exception as e:
         print('top', i, e)
 
@@ -270,7 +272,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         bottom_vel = U * assemble(v_old[0] * dx_sub(1)) / area
-        bottom_pol = 100 * w_sa * assemble((1/(1+f_field*dot(field,field)))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
+        bottom_pol = 100 * w_sa * assemble((1/(1+f_field*fieldmag)))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
     except Exception as e:
         print('bottom', i, e)
 
@@ -291,7 +293,7 @@ for i in tqdm(range(numSteps)):
         sumstat[i, 6] = assemble((inner(p_old + v_old, E) / sqrt(inner(p_old + v_old, p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble((1+dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
-        sumstat[i, 9] = assemble(abs(100*(1/(1+f_field*dot(field,field)))*(1+f_field*dot(p_old,field)) * p_old[0] + v_old[0]) * dx_sub(1)) / area
+        sumstat[i, 9] = assemble(abs(100*(1/(1+f_field*fieldmag))*(1+f_field*dot(p_old,field)) * p_old[0] + v_old[0]) * dx_sub(1)) / area
 
     except Exception as e:
         print('bulk', i, e)
