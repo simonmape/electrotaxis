@@ -207,11 +207,18 @@ for i in tqdm(range(numSteps)):
     solve(a_v == L_v, vpr_new, bcs_flow, solver_parameters=dict(linear_solver='superlu_dist',
                                                                       preconditioner='ilu'))
     # POLARITY EVOLUTION #
+    # L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
+    #         (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
+    #         dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
+    #         cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
+    #             1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
+    #         beta * inner(nabla_grad(phi_old), zp) * dx
+
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
             dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-            cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
-                1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
+            cE * (1 + delta_ph * (abs(angle_ver) + abs(angle_hor)) / (
+                1 + abs(angle_ver)+abs(angle_hor))) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
 
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
