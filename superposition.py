@@ -272,7 +272,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         bottom_vel = U * assemble(v_old[0] * dx_sub(1)) / area
-        bottom_pol = 100 * w_sa * assemble((1/(1+f_field*fieldmag)))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
+        bottom_pol = 100 * w_sa * assemble((1/(1+f_field*fieldmag))*(1+f_field*dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
     except Exception as e:
         print('bottom', i, e)
 
