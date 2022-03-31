@@ -188,7 +188,7 @@ sumstat = np.zeros((numSteps, 10))
 
 for i in tqdm(range(numSteps)):
     t = i * dt
-
+    print(1/(1+f_field*fieldmag))
     # molecular field evolution
     if t < 1 or t > 4:
         field = Expression(('0.0','0.0'), degree=2)
