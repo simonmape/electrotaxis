@@ -188,7 +188,6 @@ sumstat = np.zeros((numSteps, 10))
 
 for i in tqdm(range(numSteps)):
     t = i * dt
-    print(1/(1+f_field*fieldmag))
     # molecular field evolution
     if t < 1 or t > 4:
         field = Expression(('0.0','0.0'), degree=2)
@@ -196,6 +195,7 @@ for i in tqdm(range(numSteps)):
     else:
         field = Expression(('1.0','0.0'), degree=2)
         fieldmag =1
+    print(1 / (1 + f_field * fieldmag))
     # Compute gradients of phase field to ID regions
     #phigrad = project(grad(phi_old), V)
     angle_hor = project(-inner(grad(phi_old), right) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
