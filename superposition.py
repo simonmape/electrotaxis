@@ -234,7 +234,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         sumstat[i, 0] = U * assemble(v_old[0] * dx_sub(1)) / area
-        sumstat[i, 1] = 100 * w_sa * assemble((abs(dot(p_old,field)) * p[0])* dx_sub(1)) / area
+        sumstat[i, 1] = 100 * w_sa * assemble((abs(dot(p_old,field)) * p_old[0])* dx_sub(1)) / area
     except Exception as e:
         print('leading', i, e)
 
@@ -246,7 +246,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         sumstat[i, 2] = U * assemble(v_old[0] * dx_sub(1)) / area
-        sumstat[i, 3] = 100 * w_sa * assemble((abs(dot(p_old,field)) * p[0])* dx_sub(1)) / area
+        sumstat[i, 3] = 100 * w_sa * assemble((abs(dot(p_old,field)) * p_old[0])* dx_sub(1)) / area
     except Exception as e:
         print('trailing', i, e)
 
@@ -258,7 +258,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         top_vel = U * assemble(v_old[0] * dx_sub(1)) / area
-        top_pol = 100 * w_sa * assemble((abs(dot(p_old,field)) * p[0])* dx_sub(1)) / area
+        top_pol = 100 * w_sa * assemble((abs(dot(p_old,field)) * p_old[0])* dx_sub(1)) / area
     except Exception as e:
         print('top', i, e)
 
@@ -270,7 +270,7 @@ for i in tqdm(range(numSteps)):
     area = assemble(E[0] * dx_sub(1))
     try:
         bottom_vel = U * assemble(v_old[0] * dx_sub(1)) / area
-        bottom_pol = 100 * w_sa * assemble((abs(dot(p_old,field)) * p[0])* dx_sub(1)) / area
+        bottom_pol = 100 * w_sa * assemble((abs(dot(p_old,field)) * p_old[0])* dx_sub(1)) / area
     except Exception as e:
         print('bottom', i, e)
 
@@ -291,7 +291,7 @@ for i in tqdm(range(numSteps)):
         sumstat[i, 6] = assemble((inner(p_old + v_old, E) / sqrt(inner(p_old + v_old, p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble((abs(dot(p_old,field)) * p[0])* dx_sub(1)) / area
-        sumstat[i, 9] = assemble(abs(100 * p_old[0] + v_old[0]) * dx_sub(1)) / area
+        sumstat[i, 9] = assemble(abs(abs(dot(p_old,field)) * p[0] + v_old[0]) * dx_sub(1)) / area
 
     except Exception as e:
         print('bulk', i, e)
