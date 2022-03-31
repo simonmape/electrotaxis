@@ -69,7 +69,8 @@ U = 3600
 # Set simulation parameters we do inference on
 cE = 0.3
 beta = 0.4
-f_field = float(sys.argv[1])
+f_field = 1
+delta_ph = 50
 # Define main expressions
 class pIC(UserExpression):
     def eval(self, value, x):
@@ -207,7 +208,8 @@ for i in tqdm(range(numSteps)):
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
             dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-            cE * inner(field, zp) * dx + \
+            cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
+                1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
 
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
@@ -296,7 +298,7 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('linear/' + 'superposition_2' + '.txt', sumstat)
+np.savetxt('linear/' + 'superposition_and_sensitivity' + '.txt', sumstat)
 
 
 #(1+dot(p_old,field)) * p_old[0]
