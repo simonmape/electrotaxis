@@ -11,7 +11,7 @@ import os
 os.environ["OMP_NUM_THREADS"] = "1"
 
 # Simulator settings
-num_points = 50
+num_points = 60
 mesh = RectangleMesh(Point(0.0, 20.0), Point(60, 80), num_points, num_points)
 
 W = FunctionSpace(mesh, 'P', 1)
@@ -59,7 +59,7 @@ zeta = 0.01
 a = 1
 # cE=1
 Gamma = 1./4. #1.
-dt = 0.05
+dt = 0.025
 min_angle = 0.25
 minphi = 0.5
 minphi_b = 0.25
