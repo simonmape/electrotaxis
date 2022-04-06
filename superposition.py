@@ -244,11 +244,11 @@ right = interpolate(pointRight(), V)
 up = interpolate(pointUp(), V)
 sumstat = np.zeros((numSteps, 10))
 
-timeseries_phi = TimeSeries('results/phi_superposition_insensitive_1_-5.txt')
-timeseries_p = TimeSeries('results/p_superposition_insensitive_1_-5.txt')
-timeseries_v = TimeSeries('results/v_superposition_insensitive_1_-5.txt')
-timeseries_edge = TimeSeries('results/edge_superposition_insensitive_1_-5.txt')
-timeseries_bulk = TimeSeries('results/bulk_superposition_insensitive_1_-5.txt')
+timeseries_phi = TimeSeries('results/phi_superposition_insensitive_1_-5')
+timeseries_p = TimeSeries('results/p_superposition_insensitive_1_-5')
+timeseries_v = TimeSeries('results/v_superposition_insensitive_1_-5')
+timeseries_edge = TimeSeries('results/edge_superposition_insensitive_1_-5')
+timeseries_bulk = TimeSeries('results/bulk_superposition_insensitive_1_-5')
 
 for i in tqdm(range(numSteps)):
     t = i * dt
