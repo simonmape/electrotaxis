@@ -320,6 +320,12 @@ for i in tqdm(range(numSteps)):
     polarity_assigner_inv.assign(p_old, pols_new.sub(0))
     velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
     phi_assigner_inv.assign(phi_old,phis_new.sub(0))
+    leading_edge_old.assign(leading_edge)
+    trailing_edge_old.assign(trailing_edge)
+    top_edge_old.assign(top_edge)
+    bottom_edge_old.assign(bottom_edge)
+    bulk_region_old.assign(bulk_region)
+    edge_old.assign(edge_region)
 
     # Compute leading edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
