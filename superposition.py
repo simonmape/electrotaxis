@@ -58,8 +58,8 @@ gamma = 0.04
 zeta = 0.01
 a = 1
 # cE=1
-Gamma = 1./4. #1.
-dt = 0.025
+Gamma = 1./2. #1.
+dt = 0.05
 min_angle = 0.25
 minphi = 0.5
 minphi_b = 0.25
@@ -293,7 +293,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute bulk directionality and speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: phi_old(x) > 0.55)
+    region = AutoSubDomain(lambda x, on: phi_old(x) > 0.5)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
