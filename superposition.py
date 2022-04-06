@@ -191,7 +191,7 @@ timeseries_phi = TimeSeries('results/phi_superposition_insensitive_1_-5.txt')
 timeseries_p = TimeSeries('results/p_superposition_insensitive_1_-5.txt')
 timeseries_v = TimeSeries('results/v_superposition_insensitive_1_-5.txt')
 
-    for i in tqdm(range(numSteps)):
+for i in tqdm(range(numSteps)):
 
     t = i * dt
 
