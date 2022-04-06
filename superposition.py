@@ -65,7 +65,7 @@ U = 3600
 # Set simulation parameters we do inference on
 cE = 0.3
 beta = 0.4
-delta_ph = -5
+delta_ph = -0.5
 f_field = float(sys.argv[1])
 
 # Define main expressions
@@ -212,7 +212,7 @@ bcs_phi = DirichletBC(phasespace, zero, boundary)
 
 #Region problem
 region_trial = TrialFunction(W)
-a_region = = (1. / dt) * region_trial * w1 * dx
+a_region = (1. / dt) * region_trial * w1 * dx
 
 #Set initial conditions
 v_old = interpolate(vIC(), V)
