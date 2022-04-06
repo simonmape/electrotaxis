@@ -211,8 +211,9 @@ zero = Expression(('0.0','0.0'), degree=2)
 bcs_phi = DirichletBC(phasespace, zero, boundary)
 
 #Region problem
+w_region = TestFunction(W)
 region_trial = TrialFunction(W)
-a_region = (1. / dt) * region_trial * w1 * dx
+a_region = (1. / dt) * region_trial * w_region * dx
 zero = Expression('0.0', degree=2)
 bcs_region = DirichletBC(W, zero, boundary)
 
@@ -289,28 +290,31 @@ for i in tqdm(range(numSteps)):
                                                                       preconditioner='ilu'))
 
     #Move regions
-    L_lead = (1. / dt) * leading_edge_old * w1 * dx - div(leading_edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    L_lead = (1. / dt) * leading_edge_old * w_region * dx - div(
+        leading_edge_old * (v_new + w_sa * p_old)) * w_region * dx
     solve(a_region == L_lead, leading_edge, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
-                                                                    preconditioner='ilu'))
+                                                                               preconditioner='ilu'))
 
-    L_trail = (1. / dt) * trailing_edge_old * w1 * dx - div(trailing_edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    L_trail = (1. / dt) * trailing_edge_old * w_region * dx - div(
+        trailing_edge_old * (v_new + w_sa * p_old)) * w_region * dx
     solve(a_region == L_trail, trailing_edge, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
-                                                                            preconditioner='ilu'))
+                                                                                 preconditioner='ilu'))
 
-    L_top = (1. / dt) * top_edge_old * w1 * dx - div(top_edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    L_top = (1. / dt) * top_edge_old * w_region * dx - div(top_edge_old * (v_new + w_sa * p_old)) * w_region * dx
     solve(a_region == L_top, top_edge, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
-                                                                              preconditioner='ilu'))
-
-    L_bottom = (1. / dt) * bottom_edge_old * w1 * dx - div(bottom_edge_old * (v_new + w_sa * p_old)) * w1 * dx
-    solve(a_region == L_bottom, bottom_edge, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
-                                                                       preconditioner='ilu'))
-    L_bulk = (1. / dt) * bulk_region_old * w1 * dx - div(bulk_region_old * (v_new + w_sa * p_old)) * w1 * dx
-    solve(a_region == L_top, bulk_region, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
-                                                                       preconditioner='ilu'))
-
-    L_edge = (1. / dt) * edge_old * w1 * dx - div(edge_old * (v_new + w_sa * p_old)) * w1 * dx
-    solve(a_region == L_edge, edge_region, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
                                                                           preconditioner='ilu'))
+
+    L_bottom = (1. / dt) * bottom_edge_old * w_region * dx - div(
+        bottom_edge_old * (v_new + w_sa * p_old)) * w_region * dx
+    solve(a_region == L_bottom, bottom_edge, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                                preconditioner='ilu'))
+    L_bulk = (1. / dt) * bulk_region_old * w_region * dx - div(bulk_region_old * (v_new + w_sa * p_old)) * w_region * dx
+    solve(a_region == L_top, bulk_region, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                             preconditioner='ilu'))
+
+    L_edge = (1. / dt) * edge_old * w_region * dx - div(edge_old * (v_new + w_sa * p_old)) * w_region * dx
+    solve(a_region == L_edge, edge_region, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                              preconditioner='ilu'))
 
     # ASSIGN ALL VARIABLES FOR NEW STEP
     polarity_assigner_inv.assign(p_old, pols_new.sub(0))
