@@ -307,4 +307,4 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('linear/' + 'superposition_2' + '.txt', sumstat)
+np.savetxt('linear/' + 'superposition_insensitive_1_-10' + '.txt', sumstat)
