@@ -57,13 +57,9 @@ M = D / a
 gamma = 0.04
 zeta = 0.01
 a = 1
-# cE=1
-Gamma = 1./2. #1.
+Gamma = 1./2.
 dt = 0.05
-min_angle = 0.25
-minphi = 0.5
-minphi_b = 0.25
-numSteps = int(10 / dt)  # electrotaxis time is 10 hours
+numSteps = int(10 / dt)
 U = 3600
 
 # Set simulation parameters we do inference on
@@ -71,6 +67,7 @@ cE = 0.3
 beta = 0.4
 delta_ph = -5
 f_field = float(sys.argv[1])
+
 # Define main expressions
 class pIC(UserExpression):
     def eval(self, value, x):
@@ -98,7 +95,6 @@ class phiIC(UserExpression):
 class scalarZero(UserExpression):
     def eval(self, value, x):
         value[:] = 0
-
     def value_shape(self):
         return ()
 
@@ -119,12 +115,58 @@ class pointRight(UserExpression):
 class pointUp(UserExpression):
     def eval(self, value, x):
         value[:] = [0, 1]
-
     def value_shape(self):
         return (2,)
 
+class right(UserExpression):
+    def eval(self, value, x):
+        value[:] = 0
+        if 18 < x[0] < 20 and 47 < x[1] < 53:
+            value[:] = 1
+    def value_shape(self):
+        return ()
+
+class left(UserExpression):
+    def eval(self, value, x):
+        value[:] = 0
+        if 10 < x[0] < 12 and 47 < x[1] < 53:
+            value[:] = 1
+    def value_shape(self):
+        return ()
+
+class top(UserExpression):
+    def eval(self, value, x):
+        value[:] = 0
+        if 12 < x[0] < 18 and 53 < x[1] < 55:
+            value[:] = 1
+    def value_shape(self):
+        return ()
+
+class bottom(UserExpression):
+    def eval(self, value, x):
+        value[:] = 0
+        if 12 < x[0] < 18 and 45 < x[1] < 47:
+            value[:] = 1
+    def value_shape(self):
+        return ()
+
+class bulk(UserExpression):
+    def eval(self, value, x):
+        value[:] = 0
+        if 12 < x[0] < 18 and 47 < x[1] < 53:
+            value[:] = 1
+    def value_shape(self):
+        return ()
+
+class edge(UserExpression):
+    def eval(self, value, x):
+        value[:] = 0
+        if (10 < x[0] < 20 and 45 < x[1] < 47) or (10 < x[0] < 20 and 53 < x[1] < 55) or (10 < x[0] < 12 and 45 < x[1] < 55) or (18 < x[0] < 20 and 45 < x[1] < 55):
+            value[:] = 1
+    def value_shape(self):
+        return ()
+
 boundary = 'near(x[1],20) || near(x[1], 80) || near(x[0], 0) || near(x[0],60)'
-n = FacetNormal(mesh)
 
 #FLOW PROBLEM
 vpr_new = Function(flowspace)
@@ -168,6 +210,10 @@ a_phi = (1. / dt) * dphi1 * w1 * dx + M * dot(nabla_grad(dphi2), nabla_grad(w1))
 zero = Expression(('0.0','0.0'), degree=2)
 bcs_phi = DirichletBC(phasespace, zero, boundary)
 
+#Region problem
+region_trial = TrialFunction(W)
+a_region = = (1. / dt) * region_trial * w1 * dx
+
 #Set initial conditions
 v_old = interpolate(vIC(), V)
 pr_old = TestFunction(W)  # interpolate(scalarZero(),W)
@@ -179,6 +225,14 @@ phider_old = TestFunction(W)  # interpolate(scalarZero(),W)
 # Assign initial conditions for polarity fields
 p_old = interpolate(pIC(), V)
 pder_old = TestFunction(V)  # interpolate(vIC(),V)
+
+# Assign initial conditions for location fields
+leading_edge_old, leading_edge = interpolate(right(),W), Function(W)
+trailing_edge_old, trailing_edge = interpolate(left(),W), Function(W)
+top_edge_old, top_edge = interpolate(top(),W), Function(W)
+bottom_edge_old, bottom_edge = interpolate(bottom(),W), Function(W)
+bulk_region_old, bulk_region = interpolate(bulk(),W), Function(W)
+edge_old, edge_region = interpolate(edge(),W), Function(W)
 
 # Define the functions to be loaded here
 scalar_space = FunctionSpace(mesh, P1)
@@ -192,7 +246,6 @@ timeseries_p = TimeSeries('results/p_superposition_insensitive_1_-5.txt')
 timeseries_v = TimeSeries('results/v_superposition_insensitive_1_-5.txt')
 
 for i in tqdm(range(numSteps)):
-
     t = i * dt
 
     timeseries_phi.store(phi_old.vector(), t)
@@ -206,11 +259,6 @@ for i in tqdm(range(numSteps)):
     else:
         field = Expression(('1.0','0.0'), degree=2)
         fieldmag =1
-    print(1 / (1 + f_field * fieldmag))
-    # Compute gradients of phase field to ID regions
-    #phigrad = project(grad(phi_old), V)
-    angle_hor = project(-inner(grad(phi_old), right) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
-    angle_ver = project(-inner(grad(phi_old), up) / sqrt(inner(grad(phi_old), grad(phi_old)) + 0.005), W)
 
     #VELOCITY
     L_v = zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
@@ -220,16 +268,8 @@ for i in tqdm(range(numSteps)):
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
             dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-            cE * (1 + delta_ph * inner(nabla_grad(phi_old), nabla_grad(phi_old)) / (
-                1 + inner(nabla_grad(phi_old), nabla_grad(phi_old)))) * inner(field, zp) * dx + \
+            cE * (1 + delta_ph * edge_old) * inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
-
-    # L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
-    #         (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
-    #         dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-    #         cE * (1 + delta_ph * (abs(angle_ver) + abs(angle_hor)) / (
-    #             1 + abs(angle_ver)+abs(angle_hor))) * inner(field, zp) * dx + \
-    #         beta * inner(nabla_grad(phi_old), zp) * dx
 
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
                                                                  preconditioner='ilu'))
@@ -242,6 +282,30 @@ for i in tqdm(range(numSteps)):
     solve(a_phi == L_phi, phis_new, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
                                                                       preconditioner='ilu'))
 
+    #Move regions
+    L_lead = (1. / dt) * leading_edge_old * w1 * dx - div(leading_edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    solve(a_region == L_lead, leading_edge, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                    preconditioner='ilu'))
+
+    L_trail = (1. / dt) * trailing_edge_old * w1 * dx - div(trailing_edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    solve(a_region == L_trail, trailing_edge, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                            preconditioner='ilu'))
+
+    L_top = (1. / dt) * top_edge_old * w1 * dx - div(top_edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    solve(a_region == L_top, top_edge, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                              preconditioner='ilu'))
+
+    L_bottom = (1. / dt) * bottom_edge_old * w1 * dx - div(bottom_edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    solve(a_region == L_bottom, bottom_edge, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                       preconditioner='ilu'))
+    L_bulk = (1. / dt) * bulk_region_old * w1 * dx - div(bulk_region_old * (v_new + w_sa * p_old)) * w1 * dx
+    solve(a_region == L_top, bulk_region, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                       preconditioner='ilu'))
+
+    L_edge = (1. / dt) * edge_old * w1 * dx - div(edge_old * (v_new + w_sa * p_old)) * w1 * dx
+    solve(a_region == L_edge, edge_region, bcs_phi, solver_parameters=dict(linear_solver='superlu_dist',
+                                                                          preconditioner='ilu'))
+
     # ASSIGN ALL VARIABLES FOR NEW STEP
     polarity_assigner_inv.assign(p_old, pols_new.sub(0))
     velocity_assigner_inv.assign(v_old, vpr_new.sub(0))
@@ -249,7 +313,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute leading edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_hor(x) > min_angle)
+    region = AutoSubDomain(lambda x, on: leading_edge_old(x) > 0)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -261,7 +325,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute trailing edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_hor(x) < -min_angle)
+    region = AutoSubDomain(lambda x, on: trailing_edge_old(x) >0)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -273,7 +337,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute top zone speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_ver(x) > min_angle)
+    region = AutoSubDomain(lambda x, on: top_edge_old(x) > 0)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -285,7 +349,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute bottom zone speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: angle_ver(x) < -min_angle)
+    region = AutoSubDomain(lambda x, on: bottom_edge_old(x) >0)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -303,12 +367,11 @@ for i in tqdm(range(numSteps)):
 
     # Compute bulk directionality and speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: phi_old(x) > 0.5)
+    region = AutoSubDomain(lambda x, on: bulk_region_old(x) > 0)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        #print(assemble(inner(nabla_grad(phi_old), nabla_grad(phi_old))/(1+inner(nabla_grad(phi_old), nabla_grad(phi_old))) * dx_sub(1))/area)
         sumstat[i, 6] = assemble((inner((1/(1+f_field*fieldmag))*(1+dot(p_old,field)) * p_old + v_old, E) / sqrt(inner((1/(1+f_field*fieldmag))*(1+dot(p_old,field)) * p_old + v_old, (1/(1+f_field*fieldmag))*(1+dot(p_old,field)) * p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble((1/(1+f_field*fieldmag))*(1+dot(p_old,field)) * p_old[0] * dx_sub(1)) / area
@@ -317,4 +380,4 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('linear/' + 'superposition_insensitive_1_-5' + '.txt', sumstat)
+np.savetxt('linear/' + 'track_interface_1_-5' + '.txt', sumstat)
