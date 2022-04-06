@@ -309,7 +309,7 @@ for i in tqdm(range(numSteps)):
     solve(a_region == L_bottom, bottom_edge, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
                                                                                 preconditioner='ilu'))
     L_bulk = (1. / dt) * bulk_region_old * w_region * dx - div(bulk_region_old * (v_new + w_sa * p_old)) * w_region * dx
-    solve(a_region == L_top, bulk_region, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
+    solve(a_region == L_bulk, bulk_region, bcs_region, solver_parameters=dict(linear_solver='superlu_dist',
                                                                              preconditioner='ilu'))
 
     L_edge = (1. / dt) * edge_old * w_region * dx - div(edge_old * (v_new + w_sa * p_old)) * w_region * dx
