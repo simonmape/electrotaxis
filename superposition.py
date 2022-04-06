@@ -69,7 +69,7 @@ U = 3600
 # Set simulation parameters we do inference on
 cE = 0.3
 beta = 0.4
-delta_ph = -25
+delta_ph = -5
 f_field = float(sys.argv[1])
 # Define main expressions
 class pIC(UserExpression):
@@ -307,4 +307,4 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('linear/' + 'superposition_insensitive_1_-10' + '.txt', sumstat)
+np.savetxt('linear/' + 'superposition_insensitive_1_-5' + '.txt', sumstat)
