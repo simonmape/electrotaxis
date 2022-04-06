@@ -244,6 +244,8 @@ sumstat = np.zeros((numSteps, 10))
 timeseries_phi = TimeSeries('results/phi_superposition_insensitive_1_-5.txt')
 timeseries_p = TimeSeries('results/p_superposition_insensitive_1_-5.txt')
 timeseries_v = TimeSeries('results/v_superposition_insensitive_1_-5.txt')
+timeseries_edge = TimeSeries('results/edge_superposition_insensitive_1_-5.txt')
+timeseries_bulk = TimeSeries('results/bulk_superposition_insensitive_1_-5.txt')
 
 for i in tqdm(range(numSteps)):
     t = i * dt
@@ -251,6 +253,8 @@ for i in tqdm(range(numSteps)):
     timeseries_phi.store(phi_old.vector(), t)
     timeseries_p.store(p_old.vector(), t)
     timeseries_v.store(v_old.vector(), t)
+    timeseries_edge.store(edge_old.vector(), t)
+    timeseries_bulk.store(bulk_region_old.vector(), t)
 
     # molecular field evolution
     if t < 1 or t > 4:
