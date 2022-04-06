@@ -213,7 +213,7 @@ bcs_phi = DirichletBC(phasespace, zero, boundary)
 #Region problem
 region_trial = TrialFunction(W)
 a_region = (1. / dt) * region_trial * w1 * dx
-zero = Expression(('0.0'), degree=2)
+zero = Expression('0.0', degree=2)
 bcs_region = DirichletBC(W, zero, boundary)
 
 #Set initial conditions
