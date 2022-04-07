@@ -244,24 +244,12 @@ right = interpolate(pointRight(), V)
 up = interpolate(pointUp(), V)
 sumstat = np.zeros((numSteps, 10))
 
-timeseries_phi = TimeSeries('results/phi_superposition_insensitive_1_-5')
-timeseries_p = TimeSeries('results/p_superposition_insensitive_1_-5')
-timeseries_v = TimeSeries('results/v_superposition_insensitive_1_-5')
-timeseries_edge = TimeSeries('results/edge_superposition_insensitive_1_-5')
-timeseries_bulk = TimeSeries('results/bulk_superposition_insensitive_1_-5')
-
 # molecular field evolution
 field = Expression(('0.0','0.0'), degree=2)
 fieldmag = 0
 
 for i in tqdm(range(numSteps)):
     t = i * dt
-
-    timeseries_phi.store(phi_old.vector(), t)
-    timeseries_p.store(p_old.vector(), t)
-    timeseries_v.store(v_old.vector(), t)
-    timeseries_edge.store(edge_old.vector(), t)
-    timeseries_bulk.store(bulk_region_old.vector(), t)
 
     #VELOCITY
     L_v = zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
