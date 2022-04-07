@@ -244,8 +244,7 @@ right = interpolate(pointRight(), V)
 up = interpolate(pointUp(), V)
 sumstat = np.zeros((numSteps, 10))
 
-field = Expression(('1.0', '0.0'), degree=2)
-fieldmag = 1
+
 
 for i in tqdm(range(numSteps)):
     t = i * dt
@@ -254,6 +253,9 @@ for i in tqdm(range(numSteps)):
     if t < 1:
         field = Expression(('0.0','0.0'), degree=2)
         fieldmag = 0
+    else:
+        field = Expression(('1.0', '0.0'), degree=2)
+        fieldmag = 1
 
     #VELOCITY
     L_v = zeta*inner(outer(p_old, p_old), nabla_grad(y)) * dx
