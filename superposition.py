@@ -329,7 +329,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute leading edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: leading_edge_old(x) > 0.5)
+    region = AutoSubDomain(lambda x, on: leading_edge_old(x) > 0.25)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -341,7 +341,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute trailing edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: trailing_edge_old(x) >0.5)
+    region = AutoSubDomain(lambda x, on: trailing_edge_old(x) >0.25)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -353,7 +353,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute top zone speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: top_edge_old(x) > 0.5)
+    region = AutoSubDomain(lambda x, on: top_edge_old(x) > 0.25)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -365,7 +365,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute bottom zone speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: bottom_edge_old(x) >0.5)
+    region = AutoSubDomain(lambda x, on: bottom_edge_old(x) >0.25)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -383,7 +383,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute bulk directionality and speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: bulk_region_old(x) > 0.5)
+    region = AutoSubDomain(lambda x, on: bulk_region_old(x) > 0.25)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
