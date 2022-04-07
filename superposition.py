@@ -11,7 +11,7 @@ import os
 os.environ["OMP_NUM_THREADS"] = "1"
 
 # Simulator settings
-num_points = 60
+num_points = 75
 mesh = RectangleMesh(Point(0.0, 20.0), Point(60, 80), num_points, num_points)
 
 W = FunctionSpace(mesh, 'P', 1)
@@ -58,7 +58,7 @@ gamma = 0.04
 zeta = 0.01
 a = 1
 Gamma = 1./2.
-dt = 0.05
+dt = 0.025
 numSteps = int(10 / dt)
 U = 3600
 
@@ -329,7 +329,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute leading edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: leading_edge_old(x) > 0)
+    region = AutoSubDomain(lambda x, on: leading_edge_old(x) > 0.5)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -341,7 +341,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute trailing edge outgrowth
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: trailing_edge_old(x) >0)
+    region = AutoSubDomain(lambda x, on: trailing_edge_old(x) >0.5)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -353,7 +353,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute top zone speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: top_edge_old(x) > 0)
+    region = AutoSubDomain(lambda x, on: top_edge_old(x) > 0.5)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -365,7 +365,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute bottom zone speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: bottom_edge_old(x) >0)
+    region = AutoSubDomain(lambda x, on: bottom_edge_old(x) >0.5)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
@@ -383,7 +383,7 @@ for i in tqdm(range(numSteps)):
 
     # Compute bulk directionality and speed
     cf = MeshFunction("size_t", mesh, mesh.topology().dim(), 0)
-    region = AutoSubDomain(lambda x, on: bulk_region_old(x) > 0)
+    region = AutoSubDomain(lambda x, on: bulk_region_old(x) > 0.5)
     region.mark(cf, 1)
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
