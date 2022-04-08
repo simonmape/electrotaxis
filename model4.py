@@ -64,6 +64,7 @@ U = 3600
 beta = 0.8
 cE = float(sys.argv[1])
 f_field = float(sys.argv[2])
+delta_ph = float(sys.argv[3])
 
 # Define main expressions
 class pIC(UserExpression):
@@ -379,4 +380,4 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('model3_results/' + 'model3_cE' + str(cE).replace(".","_")+'_f' + str(f_field).replace(".","_") + '.txt', sumstat)
+np.savetxt('model4_results/' + 'model4_cE' + str(cE).replace(".","_")+'_f' + str(f_field).replace(".","_") + '_dph' + str(delta_ph).replace(".","_")+ '.txt', sumstat)
