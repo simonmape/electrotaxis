@@ -370,7 +370,7 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 6] = assemble((inner(100*p_old + v_old, E) / sqrt(100*p_old + v_old, 100*p_old + v_old))) * dx_sub(1)) / area
+        sumstat[i, 6] = assemble((inner(100*p_old + v_old, E) / sqrt(inner(100*p_old + v_old, 100*p_old + v_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble(p_old[0] * dx_sub(1)) / area
         sumstat[i, 9] = assemble(abs(100* p_old[0] + v_old[0]) * dx_sub(1)) / area
