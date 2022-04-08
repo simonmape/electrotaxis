@@ -258,7 +258,7 @@ for i in tqdm(range(numSteps)):
     L_pol = (1. / dt) * dot(p_old, yp) * dx - inner(nabla_grad(p_old) * (v_new + w_sa * p_old), yp) * dx - \
             (alpha / phicr) * inner((phi_old - phicr) * p_old, zp) * dx + \
             dot(p_old, p_old) * alpha * inner(p_old, zp) * dx - \
-            cE * (1 + delta_ph * edge_old) * inner(field, zp) * dx + \
+            cE *  inner(field, zp) * dx + \
             beta * inner(nabla_grad(phi_old), zp) * dx
 
     solve(a_pol == L_pol, pols_new, bcs_pol, solver_parameters=dict(linear_solver='superlu_dist',
