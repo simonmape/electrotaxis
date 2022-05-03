@@ -22,64 +22,68 @@ bulk_speed_obs = np.loadtxt('speed_stim_stat_smooth.txt')
 def compute_log_likelihood(summary):
     #Leading edge
     obs = leading_edge_obs
-    obs = obs[obs[:,0]<5]
+    obs = obs[obs[:,0]<10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*40).astype(int)
-    print(timepoints)
-    timepoints = timepoints[timepoints<500]
-    sim = gaussian_filter1d(summary[timepoints, 0] + summary[timepoints, 1],5)
+    timepoints = timepoints[timepoints<1000]
+    sim = 0.5*gaussian_filter1d(summary[timepoints, 0] + summary[timepoints, 1],5)
     le = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Trailing edge
     obs = trailing_edge_obs
-    obs = obs[obs[:, 0] < 5]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*40).astype(int)
-    timepoints = timepoints[timepoints < 500]
-    sim = gaussian_filter1d(summary[timepoints, 2] + summary[timepoints, 3],5)
+    timepoints = timepoints[timepoints < 1000]
+    sim = 0.5*gaussian_filter1d(summary[timepoints, 2] + summary[timepoints, 3],5)
     te = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Top/bottom edge
     obs = top_edge_obs
-    obs = obs[obs[:, 0] < 5]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*40).astype(int)
-    timepoints = timepoints[timepoints < 500]
-    sim = gaussian_filter1d(0.5*(summary[timepoints, 4]+summary[timepoints, 5]),5)
+    timepoints = timepoints[timepoints < 1000]
+    sim = 0.5*gaussian_filter1d(0.5*(summary[timepoints, 4]+summary[timepoints, 5]),5)
     tbe = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     # Bulk directionality
     obs = bulk_dir_obs
-    obs = obs[obs[:, 0] < 5]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*40).astype(int)
-    timepoints = timepoints[timepoints < 500]
+    timepoints = timepoints[timepoints < 1000]
     sim = gaussian_filter1d(summary[timepoints, 6],5)
     bd = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Bulk speed
     obs = bulk_speed_obs
-    obs = obs[obs[:, 0] < 5]
+    obs = obs[obs[:, 0] < 10]
     obs = obs[~np.isnan(obs).any(axis=1)]
     timepoints = np.round(obs[:, 0]*40).astype(int)
-    timepoints = timepoints[timepoints < 500]
-    sim = gaussian_filter1d(summary[timepoints, 9],5)
+    timepoints = timepoints[timepoints < 1000]
+    sim = 0.5*gaussian_filter1d(summary[timepoints, 9],5)
     bs = -sum(norm.logpdf(sim, obs[:, 1], obs[:, 2]))
 
     #Likelihood sum
     ls = le+te+tbe+bd+bs
     return le, te, tbe, bd, bs, ls
 
-for sumstat in tqdm(os.listdir('Model1_Outputs/')):
+for sumstat in tqdm(os.listdir('Model4_Outputs/')):
     if re.search(r'\d', sumstat):
         #Read in parameter values used from file name
-        beta = float(sumstat.replace('model1','').replace('.txt',''))
+        reduced = sumstat.replace('_f','*').replace('model4_cE','').replace('_dph','*').replace('.txt','')
+        reduced = reduced.replace('_','.')
+        params = reduced.split('*')
+        cE = float(params[0])
+        f = float(params[1])
+        delta_ph = float(params[2])
         #Read the summary statistic
-        summary = np.loadtxt('Model1_Outputs/'+sumstat)
+        summary = np.loadtxt('Model4_Outputs/'+sumstat)
         #Compute log-likelihood for this sample
         le, te, tbe, bd, bs, ls = compute_log_likelihood(summary)
         #Record log-likelihoood for this parameter value
-        likelihoods.append([beta,le, te, tbe, bd, bs, ls])
+        likelihoods.append([cE,f,delta_ph,le, te, tbe, bd, bs, ls])
 
-df = pd.DataFrame(likelihoods, columns = ['beta','le', 'te', 'tbe', 'bs', 'bd', 'ls'])
-df.to_csv('model1_loglikelihoods.csv')
+df = pd.DataFrame(likelihoods, columns = ['cE','f','delta_ph','le', 'te', 'tbe', 'bs', 'bd', 'ls'])
+df.to_csv('model4_loglikelihoods.csv')

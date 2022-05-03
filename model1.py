@@ -57,12 +57,12 @@ zeta = 0.01
 a = 1
 Gamma = 1./2.
 dt = 0.025
-numSteps = int(5 / dt)
+numSteps = int(10 / dt)
 U = 3600
 
 # Set simulation parameters we do inference on
 cE = float(sys.argv[1])
-beta = 0.8
+beta = 0.3
 
 # Define main expressions
 class pIC(UserExpression):
@@ -244,7 +244,7 @@ for i in tqdm(range(numSteps)):
     t = i * dt
 
     # molecular field evolution
-    if t < 1:
+    if t < 1 or t > 4:
         field = Expression(('0.0','0.0'), degree=2)
     else:
         field = Expression(('1.0', '0.0'), degree=2)
@@ -370,7 +370,7 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 6] = assemble((inner(100*p_old + v_old, E) / sqrt(inner(100*p_old + v_old, 100*p_old + v_old))) * dx_sub(1)) / area
+        sumstat[i, 6] = assemble((inner(p_old, E) / sqrt(inner(p_old, p_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble(p_old[0] * dx_sub(1)) / area
         sumstat[i, 9] = assemble(abs(100* p_old[0] + v_old[0]) * dx_sub(1)) / area
@@ -378,4 +378,4 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('model1_results/' + 'model1' + str(cE) + '.txt', sumstat)
+np.savetxt('model1_results_new/' + 'model1' + str(cE) + '.txt', sumstat)

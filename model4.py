@@ -61,7 +61,7 @@ numSteps = int(10 / dt)
 U = 3600
 
 # Set simulation parameters we do inference on
-beta = 0.8
+beta = 0.3
 cE = float(sys.argv[1])
 f_field = float(sys.argv[2])
 delta_ph = float(sys.argv[3])
@@ -372,7 +372,7 @@ for i in tqdm(range(numSteps)):
     dx_sub = Measure('dx', subdomain_data=cf)
     area = assemble(E[0] * dx_sub(1))
     try:
-        sumstat[i, 6] = assemble((inner(100*(1+f_field*dot(p_old,field))*p_old + v_old, E) / sqrt(inner(100*(1+f_field*dot(p_old,field))*p_old + v_old, 100*(1+f_field*dot(p_old,field))*p_old + v_old))) * dx_sub(1)) / area
+        sumstat[i, 6] = assemble((inner((1+f_field*dot(p_old,field))*p_old, E) / sqrt(inner((1+f_field*dot(p_old,field))*p_old, (1+f_field*dot(p_old,field))*p_old))) * dx_sub(1)) / area
         sumstat[i, 7] = U * assemble(v_old[0] * dx_sub(1)) / area
         sumstat[i, 8] = 100 * w_sa * assemble((1+f_field*dot(p_old,field))*p_old[0] * dx_sub(1)) / area
         sumstat[i, 9] = assemble(abs(100* (1+f_field*dot(p_old,field))*p_old[0] + v_old[0]) * dx_sub(1)) / area
@@ -380,4 +380,4 @@ for i in tqdm(range(numSteps)):
     except Exception as e:
         print('bulk', i, e)
 
-np.savetxt('model4_results/' + 'model4_cE' + str(cE).replace(".","_")+'_f' + str(f_field).replace(".","_") + '_dph' + str(delta_ph).replace(".","_")+ '.txt', sumstat)
+np.savetxt('model4_results_new/' + 'model4_cE' + str(cE).replace(".","_")+'_f' + str(f_field).replace(".","_") + '_dph' + str(delta_ph).replace(".","_")+ '.txt', sumstat)
