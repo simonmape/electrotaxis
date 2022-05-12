@@ -61,8 +61,8 @@ numSteps = int(12 / dt)
 U = 3600
 
 # Set simulation parameters we do inference on
-cE = 0.2
-delta_ph = 0.2
+cE = float(sys.argv[1])
+delta_ph = float(sys.argv[2])
 
 # Define main expressions
 class pIC(UserExpression):
